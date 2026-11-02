@@ -1,0 +1,40 @@
+# Morning Cards — application web (Next.js).
+#
+# Exposition : uniquement par les labels Traefik de ce conteneur (aucun fichier
+# de /opt/traefik n'est touché). Supabase n'a pas de route publique : l'app le
+# sert sous /sb en réécrivant vers morningcards-kong-1 sur le réseau traefik_proxy.
+name: morningcards
+
+services:
+  morningcards-app:
+    build:
+      context: ./web
+      args:
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        APP_VERSION: ${APP_VERSION:-dev}
+    image: morningcards-app:latest
+    restart: unless-stopped
+    env_file:
+      - .env.local
+    environment:
+      # L'API Brevo refuse l'IPv6 du serveur : Node résout d'abord en IPv4.
+      NODE_OPTIONS: --dns-result-order=ipv4first
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_proxy"
+      - "traefik.http.routers.morningcards-app.rule=Host(`morningcards.vaya.rip`)"
+      - "traefik.http.routers.morningcards-app.entrypoints=websecure"
+      - "traefik.http.routers.morningcards-app.tls.certresolver=myresolver"
+      - "traefik.http.services.morningcards-app.loadbalancer.server.port=3000"
+    networks:
+      - traefik_proxy
+
+networks:
+  traefik_proxy:
+    external: true
