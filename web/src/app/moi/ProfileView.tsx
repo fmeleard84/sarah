@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { DICTS, type Locale } from "@/lib/i18n";
+import { type Locale } from "@/lib/i18n";
+import { useDicts } from "@/components/I18nProvider";
 import type { PlanId } from "@/lib/plans";
 import { toast } from "@/components/Toast";
 import { PlansSheet } from "@/components/PlansSheet";
@@ -11,6 +11,7 @@ import { PlansSheet } from "@/components/PlansSheet";
 export function ProfileView(props: {
   locale: Locale;
   email: string;
+  isAdmin: boolean;
   firstName: string;
   birthdate: string;
   notifyEmail: boolean;
@@ -19,7 +20,8 @@ export function ProfileView(props: {
   stats: { cards: number; convs: number };
   top: { name: string; image: string; count: number }[];
 }) {
-  const t = DICTS[props.locale];
+  const dicts = useDicts();
+  const t = dicts[props.locale];
   const router = useRouter();
   const [form, setForm] = useState({ firstName: props.firstName, birthdate: props.birthdate, notifyEmail: props.notifyEmail, locale: props.locale });
   const [plans, setPlans] = useState(false);
@@ -27,15 +29,9 @@ export function ProfileView(props: {
   async function save() {
     const res = await fetch("/api/profile", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
     if (res.ok) {
-      toast(DICTS[form.locale].me.saved);
+      toast(dicts[form.locale].me.saved);
       router.refresh();
     }
-  }
-
-  async function logout() {
-    await createClient().auth.signOut();
-    router.push("/bienvenue");
-    router.refresh();
   }
 
   return (
@@ -107,9 +103,18 @@ export function ProfileView(props: {
         </button>
       </section>
 
-      <button onClick={logout} className="label mt-10 text-ink/40">
-        {t.auth.logout}
-      </button>
+      <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
+        <form action="/auth/logout" method="post">
+          <button type="submit" className="label border border-ink px-6 py-3 text-ink transition-colors hover:bg-ink hover:text-canvas">
+            {t.auth.logout}
+          </button>
+        </form>
+        {props.isAdmin && (
+          <a href="/admin" className="label btn-link text-slate">
+            Administration
+          </a>
+        )}
+      </div>
 
       <PlansSheet locale={props.locale} open={plans} onClose={() => setPlans(false)} current={props.plan} />
     </>

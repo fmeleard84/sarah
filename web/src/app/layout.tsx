@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import { getLocale } from "@/lib/session";
 import { ErrorReporter } from "@/components/ErrorReporter";
+import { I18nProvider } from "@/components/I18nProvider";
+import { getTextOverrides } from "@/lib/texts";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -31,12 +33,12 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const locale = await getLocale();
+  const [locale, overrides] = await Promise.all([getLocale(), getTextOverrides()]);
   return (
     <html lang={locale} translate="no" className={`${cormorant.variable} ${dmSans.variable} notranslate`}>
       <body>
         <ErrorReporter />
-        {children}
+        <I18nProvider overrides={overrides}>{children}</I18nProvider>
       </body>
     </html>
   );

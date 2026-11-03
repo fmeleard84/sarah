@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { DICTS, type Locale } from "@/lib/i18n";
+import { type Locale } from "@/lib/i18n";
+import { useDict } from "@/components/I18nProvider";
 
 /**
  * Pill de navigation flottante, état A (menu général) : Tirer · Decks ·
@@ -10,7 +11,7 @@ import { DICTS, type Locale } from "@/lib/i18n";
  * L'icône active est pleine.
  */
 export function Nav({ locale, initials }: { locale: Locale; initials: string }) {
-  const t = DICTS[locale].nav;
+  const t = useDict(locale).nav;
   const path = usePathname();
   const items = [
     { href: "/tirage", label: t.draw, icon: DrawIcon },

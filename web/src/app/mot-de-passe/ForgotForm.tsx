@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { DICTS, type Locale } from "@/lib/i18n";
+import { type Locale } from "@/lib/i18n";
+import { useDict } from "@/components/I18nProvider";
 
 export function ForgotForm({ locale }: { locale: Locale }) {
-  const t = DICTS[locale].auth;
+  const t = useDict(locale).auth;
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);

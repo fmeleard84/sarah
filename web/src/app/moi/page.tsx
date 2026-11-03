@@ -32,6 +32,7 @@ export default async function Me() {
       <ProfileView
         locale={locale}
         email={user.email ?? ""}
+        isAdmin={profile.is_admin}
         firstName={profile.first_name ?? ""}
         birthdate={profile.birthdate ?? ""}
         notifyEmail={profile.notify_email}

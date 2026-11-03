@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DICTS, type Locale } from "@/lib/i18n";
+import { type Locale } from "@/lib/i18n";
+import { useDict } from "@/components/I18nProvider";
 import { Picto } from "@/components/Picto";
 import { PlansSheet } from "@/components/PlansSheet";
 import { Sheet } from "@/components/Sheet";
@@ -43,7 +44,7 @@ export function Conversation({
   initialMessages: Message[];
   names: Record<number, { numeral: string; name: string }>;
 }) {
-  const t = DICTS[locale];
+  const t = useDict(locale);
   const router = useRouter();
   const [cards, setCards] = useState(initialCards);
   const [messages, setMessages] = useState(initialMessages);

@@ -325,3 +325,41 @@ const en: Dict = {
 };
 
 export const DICTS: Record<Locale, Dict> = { fr, en };
+
+// ─── Textes modifiés depuis l'admin ─────────────────────────────────────────
+//
+// Les valeurs ci-dessus sont les textes par défaut. L'admin peut remplacer
+// n'importe quel texte fixe (chaîne, ou élément d'une liste) par sa clé
+// pointée, par exemple « home.hold » ou « plans.features.ritual.0 ». Les textes
+// calculés (fonctions comme home.hello) restent dans le code.
+
+export type TextOverrides = Record<Locale, Record<string, string>>;
+
+export const NO_OVERRIDES: TextOverrides = { fr: {}, en: {} };
+
+/** Les textes fixes d'un dictionnaire, à plat : [clé pointée, valeur]. */
+export function flattenTexts(node: unknown, prefix = ""): [string, string][] {
+  if (typeof node === "string") return [[prefix, node]];
+  if (Array.isArray(node)) return node.flatMap((v, i) => flattenTexts(v, prefix ? `${prefix}.${i}` : String(i)));
+  if (node && typeof node === "object") {
+    return Object.entries(node).flatMap(([k, v]) => flattenTexts(v, prefix ? `${prefix}.${k}` : k));
+  }
+  return [];
+}
+
+/** Clés modifiables : uniquement celles qui existent et portent un texte fixe. */
+export const EDITABLE_KEYS = new Set(flattenTexts(fr).map(([k]) => k));
+
+/** Le dictionnaire avec les textes modifiés appliqués (copie, l'original reste intact). */
+export function withOverrides(dict: Dict, overrides: Record<string, string> | undefined): Dict {
+  if (!overrides || Object.keys(overrides).length === 0) return dict;
+  const apply = (node: unknown, prefix: string): unknown => {
+    if (typeof node === "string") return overrides[prefix] ?? node;
+    if (Array.isArray(node)) return node.map((v, i) => apply(v, `${prefix}.${i}`));
+    if (node && typeof node === "object") {
+      return Object.fromEntries(Object.entries(node).map(([k, v]) => [k, apply(v, prefix ? `${prefix}.${k}` : k)]));
+    }
+    return node;
+  };
+  return apply(dict, "") as Dict;
+}

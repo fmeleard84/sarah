@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { DICTS, type Locale } from "@/lib/i18n";
+import { type Locale } from "@/lib/i18n";
+import { useDict } from "@/components/I18nProvider";
 import { Sheet } from "@/components/Sheet";
 
 interface Item {
@@ -17,7 +18,7 @@ interface Item {
 }
 
 export function DeckPicker({ locale, decks, hasSession }: { locale: Locale; decks: Item[]; hasSession: boolean }) {
-  const t = DICTS[locale];
+  const t = useDict(locale);
   const router = useRouter();
   const [selected, setSelected] = useState<Item | null>(null);
   const [busy, setBusy] = useState(false);

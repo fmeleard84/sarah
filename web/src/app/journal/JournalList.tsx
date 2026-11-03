@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { DICTS, type Locale } from "@/lib/i18n";
+import { type Locale } from "@/lib/i18n";
+import { useDict } from "@/components/I18nProvider";
 
 export interface Entry {
   id: string;
@@ -16,7 +17,7 @@ export interface Entry {
 type Tab = "week" | "month" | "all" | "favorites";
 
 export function JournalList({ locale, entries: initial }: { locale: Locale; entries: Entry[] }) {
-  const t = DICTS[locale].journal;
+  const t = useDict(locale).journal;
   const [tab, setTab] = useState<Tab>("all");
   const [entries, setEntries] = useState(initial);
 

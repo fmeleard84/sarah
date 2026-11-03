@@ -181,3 +181,40 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ─── Espace d'administration ─── */
+.admin-input {
+  width: 100%;
+  background: var(--color-canvas);
+  border: 1px solid var(--color-rule);
+  border-radius: 0;
+  padding: 9px 11px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--color-ink);
+  outline: none;
+  transition: border-color 0.2s var(--ease-soft);
+}
+.admin-input:focus {
+  border-color: var(--color-slate);
+}
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--color-ink);
+  padding: 7px 14px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+  transition: background 0.2s var(--ease-soft), color 0.2s var(--ease-soft);
+}
+.admin-btn:hover:not(:disabled) {
+  background: var(--color-ink);
+  color: var(--color-canvas);
+}
+.admin-btn:disabled {
+  opacity: 0.4;
+}

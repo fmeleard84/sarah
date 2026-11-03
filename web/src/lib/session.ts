@@ -19,6 +19,7 @@ export interface Profile {
   extra_cards: number;
   onboarded_at: string | null;
   notify_email: boolean;
+  is_admin: boolean;
 }
 
 /** Langue : cookie, sinon navigateur, sinon français. */

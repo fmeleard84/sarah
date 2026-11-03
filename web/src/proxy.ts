@@ -26,5 +26,5 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   // Ni l'API Supabase réécrite, ni les fichiers statiques.
-  matcher: ["/((?!sb/|_next/static|_next/image|decks/|brand/|favicon|api/health|api/client-error).*)"],
+  matcher: ["/((?!sb/|api/admin/cards|_next/static|_next/image|decks/|brand/|favicon|api/health|api/client-error).*)"],
 };

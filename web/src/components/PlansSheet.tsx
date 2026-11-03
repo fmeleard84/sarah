@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { DICTS, type Locale } from "@/lib/i18n";
+import { type Locale } from "@/lib/i18n";
+import { useDict } from "@/components/I18nProvider";
 import { PACKS, PLANS } from "@/lib/plans";
 import { Sheet } from "@/components/Sheet";
 
@@ -18,7 +19,7 @@ export function PlansSheet({ locale, open, onClose, current }: { locale: Locale;
 }
 
 export function PlansContent({ locale, onClose, current }: { locale: Locale; onClose?: () => void; current?: string }) {
-  const t = DICTS[locale].plans;
+  const t = useDict(locale).plans;
   const [notice, setNotice] = useState<string | null>(null);
 
   async function choose(item: string) {

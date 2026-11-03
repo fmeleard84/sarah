@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DICTS, type Locale } from "@/lib/i18n";
+import { type Locale } from "@/lib/i18n";
+import { useDict } from "@/components/I18nProvider";
 import { toast } from "@/components/Toast";
 import { PlansSheet } from "@/components/PlansSheet";
 
@@ -37,7 +38,7 @@ export function HomeDraw({
   daysLeft: number | null;
   quota: "day" | "week" | null;
 }) {
-  const t = DICTS[locale];
+  const t = useDict(locale);
   const router = useRouter();
   const [spread, setSpread] = useState<1 | 3 | 5>(1);
   const [convId, setConvId] = useState<string | null>(null);

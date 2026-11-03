@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { DICTS, type Locale } from "@/lib/i18n";
+import { type Locale } from "@/lib/i18n";
+import { useDict } from "@/components/I18nProvider";
 
 /**
  * Création de compte (mur d'inscription de l'onboarding et page /inscription).
@@ -10,7 +11,7 @@ import { DICTS, type Locale } from "@/lib/i18n";
  * conversation et le deck choisi sont conservés.
  */
 export function SignupForm({ locale, onDone }: { locale: Locale; onDone: () => void }) {
-  const t = DICTS[locale];
+  const t = useDict(locale);
   const [form, setForm] = useState({ firstName: "", email: "", password: "", birthdate: "", consent: false });
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);

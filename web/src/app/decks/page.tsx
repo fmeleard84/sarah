@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireAccount } from "@/lib/session";
 import { cardImage, deckCards, listDecks } from "@/lib/decks";
-import { DICTS } from "@/lib/i18n";
+import { getDict } from "@/lib/texts";
 import { AppShell } from "@/components/AppShell";
 import { Tick } from "@/components/Tick";
 
@@ -11,7 +11,7 @@ import { Tick } from "@/components/Tick";
  */
 export default async function Library() {
   const { profile } = await requireAccount();
-  const t = DICTS[profile.locale];
+  const t = (await getDict(profile.locale));
   const decks = await listDecks();
 
   const items = await Promise.all(

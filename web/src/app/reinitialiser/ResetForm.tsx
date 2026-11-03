@@ -3,10 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { DICTS, type Locale } from "@/lib/i18n";
+import { type Locale } from "@/lib/i18n";
+import { useDict } from "@/components/I18nProvider";
 
 export function ResetForm({ locale }: { locale: Locale }) {
-  const t = DICTS[locale].auth;
+  const t = useDict(locale).auth;
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);

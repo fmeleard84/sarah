@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAccount } from "@/lib/session";
 import { cardImage, deckCards, deckDescription, getDeck, listArcana } from "@/lib/decks";
-import { DICTS } from "@/lib/i18n";
+import { getDict } from "@/lib/texts";
 import { effectivePlan } from "@/lib/plans";
 import { AppShell } from "@/components/AppShell";
 import { UseDeckButton } from "./UseDeckButton";
@@ -14,7 +14,7 @@ export default async function DeckDetail({ params }: { params: Promise<{ slug: s
   const deck = await getDeck(slug);
   if (!deck) notFound();
   const locale = profile.locale;
-  const t = DICTS[locale];
+  const t = (await getDict(locale));
   const [cards, arcana] = await Promise.all([deckCards(deck.id), listArcana()]);
   const names = new Map(arcana.map((a) => [a.number, a]));
   const locked = !deck.is_open && !effectivePlan(profile).allDecks;

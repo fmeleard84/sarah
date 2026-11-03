@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { getLocale } from "@/lib/session";
-import { DICTS } from "@/lib/i18n";
+import { getDict } from "@/lib/texts";
 
 export default async function NotFound() {
-  const t = DICTS[await getLocale()].errors;
+  const t = (await getDict(await getLocale())).errors;
   return (
     <main className="mx-auto flex min-h-dvh max-w-[420px] flex-col items-center justify-center px-6 text-center">
       <img src="/brand/picto.svg" alt="" className="h-10 w-auto" />

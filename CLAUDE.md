@@ -12,6 +12,7 @@ Recette : https://morningcards.vaya.rip (mobile d'abord, web responsive, pas de 
 - `scripts/import-decks.py` : importe les decks (images dans `web/public/decks`, lignes en base).
 - `scripts/e2e-onboarding.mjs` : parcours complet en navigateur mobile (Playwright de /opt/card).
 - `docs/DECISIONS.md` : arbitrages par défaut à faire valider par Sarah.
+- `web/src/app/admin/` : espace d'administration (`/admin`, réservé aux profils `is_admin`, 404 sinon). Decks et images des cartes (bucket Storage public `decks`), noms des arcanes, textes de l'interface (table `ui_texts`, qui surcharge `i18n.ts` clé par clé), offres des comptes. Traduction par le LLM.
 
 ## Infra (serveur partagé : ne rien casser)
 - **Ne jamais modifier `/opt/traefik`.** L'app est exposée uniquement par les labels de son conteneur (`docker-compose.yml`).
@@ -28,7 +29,7 @@ Recette : https://morningcards.vaya.rip (mobile d'abord, web responsive, pas de 
 - Dev local : `cd web && npm run dev` (port 3210, avec un `.env.local` dans web/)
 
 ## Règles produit et design
-- Textes FR et EN dans `web/src/lib/i18n.ts`. Règles de casse en tête du fichier. Jamais de tiret cadratin, pas d'emoji.
+- Textes FR et EN dans `web/src/lib/i18n.ts` (valeurs par défaut ; l'admin peut les surcharger). Côté client `useDict(locale)`, côté serveur `await getDict(locale)`, jamais `DICTS` directement. Règles de casse en tête du fichier. Jamais de tiret cadratin, pas d'emoji.
 - Offres et quotas : uniquement dans `web/src/lib/plans.ts` (côté serveur). Seul le serveur écrit tirages et messages (RLS en lecture seule).
 - Prompt de l'IA : `web/src/lib/prompt.ts` (META-PROMPT de Sarah, version du 1er juin).
 - Couleurs : canvas #FEFCFA, surface #FAF3EF, encre #2C2825, ardoise #558BBB (action), vieux rose #C16780 (une fois par écran), bronze #957E45 (cadre des cartes uniquement). CTA sans arrondi.
