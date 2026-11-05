@@ -93,14 +93,14 @@ export function ProfileView(props: {
         </button>
       </section>
 
-      <section className="mt-10 flex items-center justify-between border-b border-rule py-3">
-        <div>
-          <p className="label text-ink-3">{t.me.plan}</p>
-          <p className="title mt-1 text-[22px]">{t.plans.names[props.plan]}</p>
+      <section className="mt-10 border-b border-rule py-3">
+        <p className="label text-ink-3">{t.me.plan}</p>
+        <div className="mt-1 flex items-baseline justify-between gap-4">
+          <p className="title text-[22px]">{t.plans.names[props.plan]}</p>
+          <button onClick={() => setPlans(true)} className="label btn-link text-slate">
+            {t.me.changePlan}
+          </button>
         </div>
-        <button onClick={() => setPlans(true)} className="label btn-link text-slate">
-          {t.me.changePlan}
-        </button>
       </section>
 
       <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">

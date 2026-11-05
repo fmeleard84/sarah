@@ -10,7 +10,7 @@ une valeur par défaut pour avancer ; un seul endroit à modifier pour changer d
 | Crédits | 50/150/450 crédits par mois, ou 1 carte = 50 échanges, ou des crédits journaliers… | Quota de conversations par jour ou par semaine + cartes max par conversation, garde-fou de 50 messages par carte | `plans.ts` |
 | Ritual et le tirage à 5 cartes | Ritual : « 3 cartes par tirage » | Ritual : tirages à 1 ou 3 cartes ; 5 cartes réservé à Clarity | `plans.ts` |
 | Design system | Mémoire (coins de 14 à 16 px, boutons pilule, retournement de carte) contre les règles de juillet (CTA à 0 px, révélation au toucher) | Règles les plus récentes : brief landing du 23 juin + recette de juillet | `web/src/app/globals.css` |
-| Mur d'inscription | « au 3e message de l'IA » | Après la 2e réponse à un message de l'utilisatrice (réponse floutée), soit le 3e texte de l'IA en comptant l'accueil de la carte | `ANONYMOUS_USER_MESSAGES` dans `plans.ts` |
+| Mur d'inscription | « au 3e message de l'IA » | Validé par Sarah le 4 novembre : à l'envoi du 3e message de l'utilisatrice, les deux premières réponses étant lues en entier. Le message part une fois le compte créé | `ANONYMOUS_USER_MESSAGES` dans `plans.ts` |
 | Noms anglais des arcanes | Rider-Waite dans les prompts, Marseille dans la liste du 7 juillet | Liste Marseille (The Juggler, Fortitude, The House of God…) | `scripts/import-decks.py` |
 | Description de Chronique | Cite Bridgerton (marque déposée) | Mention retirée | `scripts/import-decks.py` |
 

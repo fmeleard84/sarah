@@ -2,16 +2,16 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { type Locale } from "@/lib/i18n";
 import { useDict } from "@/components/I18nProvider";
+import { ANONYMOUS_USER_MESSAGES } from "@/lib/plans";
 import { Picto } from "@/components/Picto";
 import { PlansSheet } from "@/components/PlansSheet";
 import { Sheet } from "@/components/Sheet";
 import { SignupForm } from "@/components/SignupForm";
 
 const DRAW_TOKEN = "[[DRAW_CARD]]";
-const ANON_MESSAGES = 2;
 
 interface Card {
   position: number;
@@ -57,21 +57,38 @@ export function Conversation({
   const [anon, setAnon] = useState(isAnonymous);
   const [zoom, setZoom] = useState<Card | null>(null);
   const [offer, setOffer] = useState(false);
-  const bottom = useRef<HTMLDivElement>(null);
+  const scroller = useRef<HTMLElement>(null);
+  const anchor = useRef<HTMLDivElement>(null);
+  const spacer = useRef<HTMLDivElement>(null);
+  const anchorNext = useRef(false);
   const busy = useRef(false);
+  /** Message envoyé juste avant le mur d'inscription, transmis une fois le compte créé. */
+  const pending = useRef<string | null>(null);
 
   const userCount = messages.filter((m) => m.role === "user").length;
   const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
   const suggestsCard = !streaming && lastAssistant?.content.includes(DRAW_TOKEN);
 
-  // Accolades obligatoires : sur les Chrome récents, scrollIntoView renvoie une Promise,
-  // que React prendrait pour une fonction de nettoyage (« i is not a function »).
-  const scrollDown = useCallback(() => {
-    bottom.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, []);
+  // Reprise d'une conversation : on arrive sur la fin du fil.
   useEffect(() => {
-    scrollDown();
-  }, [messages.length, scrollDown]);
+    if (scroller.current) scroller.current.scrollTop = scroller.current.scrollHeight;
+  }, []);
+
+  // Lecture ancrée : le message envoyé (ou la carte ajoutée) monte en haut de l'écran,
+  // la réponse s'écrit dessous et rien ne bouge ensuite. La personne descend à son
+  // rythme. La cale laisse la place de remonter l'ancre tant que le texte est court.
+  useLayoutEffect(() => {
+    const main = scroller.current;
+    const start = anchor.current;
+    const end = spacer.current;
+    if (!main || !start || !end) return;
+    const reach = end.getBoundingClientRect().top - start.getBoundingClientRect().top;
+    end.style.height = `${Math.max(0, main.clientHeight - reach - 32)}px`;
+    if (anchorNext.current) {
+      anchorNext.current = false;
+      start.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
 
   /** Lit le flux de l'IA et l'affiche au fil de l'eau. */
   const run = useCallback(
@@ -120,19 +137,25 @@ export function Conversation({
     if (busy.current || streaming || error) return;
     const done = new Set(messages.filter((m) => m.kind === "reveal").map((m) => m.card_position));
     const next = cards.find((c) => !done.has(c.position));
-    if (next) run({ reveal: next.position }, "reveal", next.position);
+    if (next) {
+      anchorNext.current = next.is_extra;
+      run({ reveal: next.position }, "reveal", next.position);
+    }
   }, [cards, messages, streaming, error, run]);
-
-  // Onboarding : après la 2e réponse, le mur d'inscription.
-  useEffect(() => {
-    if (anon && !streaming && userCount >= ANON_MESSAGES && lastAssistant?.kind === "text") setWall(true);
-  }, [anon, streaming, userCount, lastAssistant]);
 
   async function send() {
     const text = input.trim();
     if (!text || busy.current) return;
     setInput("");
+    anchorNext.current = true;
     setMessages((m) => [...m, { id: `tmp-${Date.now()}`, role: "user", kind: "text", card_position: null, content: text }]);
+    // Onboarding : les deux premières réponses sont offertes, le compte est demandé
+    // à l'envoi du message suivant, qui part une fois le compte créé.
+    if (anon && userCount >= ANONYMOUS_USER_MESSAGES) {
+      pending.current = text;
+      setWall(true);
+      return;
+    }
     await run({ message: text }, "text", null);
   }
 
@@ -161,10 +184,14 @@ export function Conversation({
   function closeOffer() {
     setOffer(false);
     router.refresh();
+    const text = pending.current;
+    pending.current = null;
+    if (text) run({ message: text }, "text", null);
   }
 
   const name = (c: Card) => names[c.card.arcana];
-  const blurLast = anon && userCount >= ANON_MESSAGES;
+  const lastUserId = [...messages].reverse().find((m) => m.role === "user")?.id;
+  const anchorOnReveal = streaming?.kind === "reveal" && streaming.position !== null && cards[streaming.position]?.is_extra;
 
   return (
     <div className="flex h-dvh flex-col">
@@ -187,9 +214,8 @@ export function Conversation({
         </div>
       </header>
 
-      <main className="no-scrollbar flex-1 overflow-y-auto px-[10%] pb-6 pt-6">
-        {messages.map((m, i) => {
-          const isLast = i === messages.length - 1;
+      <main ref={scroller} className="no-scrollbar flex-1 overflow-y-auto px-[10%] pb-6 pt-6">
+        {messages.map((m) => {
           if (m.kind === "reveal") {
             const c = cards.find((k) => k.position === m.card_position);
             return (
@@ -203,7 +229,7 @@ export function Conversation({
           }
           if (m.role === "user") {
             return (
-              <div key={m.id} className="mb-6 flex justify-end">
+              <div key={m.id} ref={m.id === lastUserId && !anchorOnReveal ? anchor : undefined} className="mb-6 flex scroll-mt-4 justify-end">
                 <p className="max-w-[min(85%,680px)] whitespace-pre-line bg-surface px-4 py-3 text-[16px] leading-relaxed" style={{ borderRadius: 4 }}>
                   {m.content}
                 </p>
@@ -211,30 +237,26 @@ export function Conversation({
             );
           }
           return (
-            <p
-              key={m.id}
-              className={`mb-6 whitespace-pre-line text-[16px] leading-relaxed transition-[filter] ${isLast && blurLast ? "select-none blur-[5px]" : ""}`}
-            >
+            <p key={m.id} className="mb-6 whitespace-pre-line text-[16px] leading-relaxed">
               {display(m.content)}
             </p>
           );
         })}
 
         {streaming && (
-          <div className="mb-6">
-            {streaming.text === "" ? (
-              <div className="flex justify-center py-4">
-                <Picto size={40} animated />
-              </div>
-            ) : streaming.kind === "reveal" ? (
-              <p className="display whitespace-pre-line text-center text-[20px]" style={{ lineHeight: 1.45 }}>
-                {display(streaming.text)}
-              </p>
-            ) : (
-              <p className={`whitespace-pre-line text-[16px] leading-relaxed ${anon && userCount >= ANON_MESSAGES ? "select-none blur-[5px]" : ""}`}>
-                {display(streaming.text)}
-              </p>
-            )}
+          <div ref={anchorOnReveal ? anchor : undefined} className="mb-6 scroll-mt-4">
+            {streaming.text !== "" &&
+              (streaming.kind === "reveal" ? (
+                <p className="display whitespace-pre-line text-center text-[20px]" style={{ lineHeight: 1.45 }}>
+                  {display(streaming.text)}
+                </p>
+              ) : (
+                <p className="whitespace-pre-line text-[16px] leading-relaxed">{display(streaming.text)}</p>
+              ))}
+            {/* Le picto reste sous le texte, que la réponse pousse vers le bas. */}
+            <div className="flex justify-center py-4">
+              <Picto size={40} animated />
+            </div>
           </div>
         )}
 
@@ -255,11 +277,11 @@ export function Conversation({
             </button>
           </div>
         )}
-        <div ref={bottom} />
+        <div ref={spacer} aria-hidden="true" />
       </main>
 
       {/* Zone de saisie : sous une ligne, sans boîte ; flèche visible au premier caractère. */}
-      {!blurLast && (
+      {!wall && (
         <footer className="border-t border-rule/60 bg-canvas px-[10%] pb-[max(env(safe-area-inset-bottom),14px)] pt-2">
           <div className="flex items-end gap-3">
             <textarea

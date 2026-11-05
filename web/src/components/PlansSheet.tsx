@@ -70,12 +70,17 @@ export function PlansContent({ locale, onClose, current }: { locale: Locale; onC
       </div>
       <p className="mt-2 text-[12px] text-ink-3">{t.packHelp}</p>
 
-      {notice && <p className="fade-up mt-6 bg-surface px-4 py-3 text-[13px]">{notice}</p>}
-
       {onClose && (
         <button onClick={onClose} className="label mt-8 block w-full py-2 text-center text-ink/40">
           {t.continue}
         </button>
+      )}
+
+      {/* Toujours à l'écran, même si l'offre choisie est en haut de la liste. */}
+      {notice && (
+        <p role="status" className={`fade-up sticky z-10 mt-6 bg-ink px-6 py-3 text-center text-[13px] text-canvas ${onClose ? "bottom-2" : "bottom-28"}`}>
+          {notice}
+        </p>
       )}
     </div>
   );

@@ -6,8 +6,8 @@ import { type Locale } from "@/lib/i18n";
 import { useDict } from "@/components/I18nProvider";
 
 /**
- * Pill de navigation flottante, état A (menu général) : Tirer · Decks ·
- * Journal · Moi. Masquée pendant la révélation et la conversation.
+ * Pill de navigation flottante, état A (menu général) : Tirer · Journal ·
+ * Decks · Moi. Masquée pendant la révélation et la conversation.
  * L'icône active est pleine.
  */
 export function Nav({ locale, initials }: { locale: Locale; initials: string }) {
@@ -15,8 +15,8 @@ export function Nav({ locale, initials }: { locale: Locale; initials: string }) 
   const path = usePathname();
   const items = [
     { href: "/tirage", label: t.draw, icon: DrawIcon },
-    { href: "/decks", label: t.decks, icon: DecksIcon },
     { href: "/journal", label: t.journal, icon: JournalIcon },
+    { href: "/decks", label: t.decks, icon: DecksIcon },
   ];
   const meActive = path.startsWith("/moi");
 
@@ -29,14 +29,14 @@ export function Nav({ locale, initials }: { locale: Locale; initials: string }) 
           {items.map(({ href, label, icon: Icon }) => {
             const active = path.startsWith(href);
             return (
-              <Link key={href} href={href} aria-label={label} aria-current={active ? "page" : undefined} className="flex h-11 w-12 items-center justify-center text-canvas">
+              <Link key={href} href={href} aria-label={label} aria-current={active ? "page" : undefined} className="flex h-12 w-14 items-center justify-center text-canvas">
                 <Icon filled={active} />
               </Link>
             );
           })}
-          <Link href="/moi" aria-label={t.me} aria-current={meActive ? "page" : undefined} className="flex h-11 w-12 items-center justify-center">
+          <Link href="/moi" aria-label={t.me} aria-current={meActive ? "page" : undefined} className="flex h-12 w-14 items-center justify-center">
             <span
-              className={`flex h-7 w-7 items-center justify-center rounded-full border border-canvas text-[11px] font-medium uppercase ${
+              className={`flex h-8 w-8 items-center justify-center rounded-full border border-canvas text-[12px] font-medium uppercase ${
                 meActive ? "bg-canvas text-ink" : "text-canvas"
               }`}
             >
@@ -51,26 +51,27 @@ export function Nav({ locale, initials }: { locale: Locale; initials: string }) 
 
 function DrawIcon({ filled }: { filled: boolean }) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5">
-      <rect x="6" y="3" width="12" height="18" rx="1.5" />
+    <svg width="28" height="28" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.4">
+      <rect x="6" y="2.5" width="12" height="19" rx="1.5" />
     </svg>
   );
 }
 
+/** Trois cartes en éventail. Pleine, la carte de devant ressort sur celles de derrière. */
 function DecksIcon({ filled }: { filled: boolean }) {
   return (
-    <svg width="24" height="22" viewBox="0 0 26 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="3" y="5" width="10" height="15" rx="1.5" transform="rotate(-10 8 12.5)" />
-      <rect x="13" y="5" width="10" height="15" rx="1.5" transform="rotate(10 18 12.5)" />
-      <rect x="8" y="3" width="10" height="16" rx="1.5" fill={filled ? "currentColor" : "#2C2825"} />
+    <svg width="30" height="28" viewBox="0 0 26 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round">
+      <rect x="3.5" y="5" width="10" height="15" rx="1.5" fill="#2C2825" transform="rotate(-14 8.5 12.5)" />
+      <rect x="8" y="4" width="10" height="15.5" rx="1.5" fill="#2C2825" transform="rotate(-2 13 12)" />
+      <rect x="12.5" y="5" width="10" height="15" rx="1.5" fill={filled ? "currentColor" : "#2C2825"} transform="rotate(11 17.5 12.5)" />
     </svg>
   );
 }
 
 function JournalIcon({ filled }: { filled: boolean }) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5">
-      <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 4v-4h0A1.5 1.5 0 0 1 4 14.5z" strokeLinejoin="round" />
+    <svg width="28" height="28" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.4">
+      <path d="M6 4h12a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3h-7.5L6 21v-4a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z" strokeLinejoin="round" />
     </svg>
   );
 }

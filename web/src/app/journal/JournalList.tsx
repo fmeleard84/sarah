@@ -44,7 +44,7 @@ export function JournalList({ locale, entries: initial }: { locale: Locale; entr
       <header className="pt-6">
         <h1 className="display text-[44px]">{t.title}</h1>
       </header>
-      <div className="no-scrollbar -mx-[12.5%] mt-6 flex gap-6 overflow-x-auto px-[12.5%]" role="tablist">
+      <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2" role="tablist">
         {(["week", "month", "all", "favorites"] as Tab[]).map((k) => (
           <button
             key={k}
@@ -67,7 +67,7 @@ export function JournalList({ locale, entries: initial }: { locale: Locale; entr
         <ul className="mt-6">
           {shown.map((e) => (
             <li key={e.id} className="flex items-center gap-4 border-b border-rule py-4">
-              <Link href={`/c/${e.id}`} className="flex flex-1 items-center gap-4">
+              <Link href={`/c/${e.id}`} className="flex min-w-0 flex-1 items-center gap-4">
                 <div className="relative h-[70px] w-[54px] shrink-0">
                   {e.images.slice(0, 3).map((src, i) => (
                     <div
@@ -81,7 +81,7 @@ export function JournalList({ locale, entries: initial }: { locale: Locale; entr
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[12px] text-ink-3">{fmt.format(new Date(e.createdAt))}</p>
-                  <p className="title mt-0.5 truncate text-[18px]">{e.title ?? t.untitled}</p>
+                  <p className="title mt-0.5 line-clamp-2 text-[18px]">{e.title ?? t.untitled}</p>
                   <p className="mt-0.5 truncate text-[12px] text-ink-2">
                     {e.names.slice(0, 2).join(" · ")}
                     {e.names.length > 2 ? ` ·+${e.names.length - 2}` : ""}
