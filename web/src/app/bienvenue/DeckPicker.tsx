@@ -17,10 +17,11 @@ interface Item {
   samples: string[];
 }
 
-export function DeckPicker({ locale, decks, hasSession }: { locale: Locale; decks: Item[]; hasSession: boolean }) {
+export function DeckPicker({ locale, decks, hasSession, initial }: { locale: Locale; decks: Item[]; hasSession: boolean; initial?: string }) {
   const t = useDict(locale);
   const router = useRouter();
-  const [selected, setSelected] = useState<Item | null>(null);
+  // Présélection depuis un lien (?deck=…, par exemple le bloc « Le Deck » d'un article).
+  const [selected, setSelected] = useState<Item | null>(() => decks.find((d) => d.slug === initial) ?? null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

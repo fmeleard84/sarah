@@ -19,6 +19,14 @@ interface Row {
 /** Début de la période, calculé à chaque requête (page dynamique). */
 const daysAgo = (days: number) => new Date(Date.now() - days * 86400_000).toISOString();
 
+const CTA_PLACES: Record<string, string> = {
+  hero: "Haut de page",
+  nav: "Menu (Rejoindre)",
+  bandeau: "Bandeau des 100 premières",
+  art: "L'art du tirage",
+  rejoindre: "Les cent premières",
+};
+
 const pct = (n: number, d: number) => (d ? `${Math.round((n / d) * 1000) / 10} %` : "–");
 
 /**
@@ -32,11 +40,13 @@ export default async function Mesure({ searchParams }: { searchParams: Promise<{
   const since = daysAgo(period.days);
 
   const db = createServiceClient();
-  const [bySource, daily, early] = await Promise.all([
+  const [bySource, daily, early, ctas] = await Promise.all([
     db.rpc("funnel_by_source", { since }),
     db.rpc("funnel_daily", { since }),
     db.from("early_adopters").select("user_id", { count: "exact", head: true }),
+    db.rpc("landing_ctas", { since }),
   ]);
+  const ctaRows = (ctas.data ?? []) as { place: string; clicks: number; visitors: number }[];
   const sources = (bySource.data ?? []) as (Row & { source: string })[];
   const days = (daily.data ?? []) as (Row & { day: string })[];
   const total = sources.reduce((t, s) => ({ visitors: t.visitors + Number(s.visitors), drawers: t.drawers + Number(s.drawers), signups: t.signups + Number(s.signups) }), {
@@ -86,6 +96,33 @@ export default async function Mesure({ searchParams }: { searchParams: Promise<{
           <code>?utm_source=instagram&amp;utm_campaign=lancement</code> aux liens publiés.
         </p>
         <Table rows={sources.map((s) => ({ key: s.source, ...s }))} first="Source" />
+      </section>
+
+      <section className="mt-14">
+        <h2 className="title text-[28px]">boutons de la landing.</h2>
+        <p className="mt-2 max-w-[60ch] text-[14px] leading-relaxed text-ink-2">Clics sur les appels à l&apos;action « early adopter », par emplacement.</p>
+        {ctaRows.length === 0 ? (
+          <p className="mt-6 text-[14px] text-ink-3">Rien sur la période.</p>
+        ) : (
+          <table className="mt-6 w-full max-w-[560px] text-left text-[14px] tabular-nums">
+            <thead>
+              <tr className="label border-b border-rule text-ink-3">
+                <th className="py-3 pr-4 font-normal">Emplacement</th>
+                <th className="py-3 pr-4 text-right font-normal">Clics</th>
+                <th className="py-3 text-right font-normal">Visiteurs</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ctaRows.map((r) => (
+                <tr key={r.place} className="border-b border-rule">
+                  <td className="py-3 pr-4">{CTA_PLACES[r.place] ?? r.place}</td>
+                  <td className="py-3 pr-4 text-right">{r.clicks}</td>
+                  <td className="py-3 text-right">{r.visitors}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </section>
 
       <section className="mt-14">

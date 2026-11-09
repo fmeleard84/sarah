@@ -53,6 +53,8 @@ const api = (path, method, body) =>
 
 step("compte de test");
 await page.goto(BASE);
+// Première visite : la landing, dont le CTA mène au premier tirage.
+await page.locator('[data-cta="hero"]').click();
 await page.waitForURL(/bienvenue/);
 await page.locator("ul button").first().click();
 await page.waitForTimeout(500);

@@ -11,7 +11,7 @@ import { createServiceClient } from "@/lib/supabase/admin";
 export const VISITOR_COOKIE = "mc_vid";
 export const NOTRACK_COOKIE = "mc_notrack";
 
-export type EventName = "visit" | "draw" | "signup";
+export type EventName = "visit" | "draw" | "signup" | "cta";
 
 const BOT = /bot|crawl|spider|slurp|preview|facebookexternalhit|headless|lighthouse|monitor|curl|wget|python|node-fetch|axios/i;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

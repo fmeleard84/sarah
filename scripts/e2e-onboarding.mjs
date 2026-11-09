@@ -34,6 +34,8 @@ page.on("pageerror", (e) => console.log("  [pageerror]", e.message));
 
 step("bienvenue");
 await page.goto(BASE);
+// Première visite : la landing, dont le CTA mène au premier tirage.
+await page.locator('[data-cta="hero"]').click();
 await page.waitForURL(/bienvenue/);
 await shot(page, "01-bienvenue");
 

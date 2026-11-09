@@ -5,7 +5,10 @@ import { track } from "@/lib/track";
 /**
  * Visite (le A de la mesure), envoyée par le navigateur une fois par onglet.
  * Exiger JavaScript écarte déjà la plupart des robots.
+ * Sert aussi aux clics sur les CTA de la landing : { cta: "hero" | "bandeau" | … }.
  */
+const CTA_PLACES = new Set(["hero", "bandeau", "art", "rejoindre", "nav"]);
+
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const str = (v: unknown) => (typeof v === "string" && v ? v : undefined);
@@ -13,6 +16,11 @@ export async function POST(req: Request) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  if (typeof body.cta === "string") {
+    if (CTA_PLACES.has(body.cta)) await track("cta", user?.id ?? null, { path: body.cta });
+    return NextResponse.json({ ok: true });
+  }
 
   // Le référent n'a d'intérêt que s'il vient d'un autre site.
   let referrer = str(body.referrer);

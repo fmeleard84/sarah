@@ -8,6 +8,7 @@ const LINKS = [
   { href: "/admin/mesure", label: "Mesure" },
   { href: "/admin/decks", label: "Decks et cartes" },
   { href: "/admin/arcanes", label: "Arcanes" },
+  { href: "/admin/magazine", label: "Magazine" },
   { href: "/admin/textes", label: "Textes et traductions" },
   { href: "/admin/utilisatrices", label: "Utilisatrices" },
 ];

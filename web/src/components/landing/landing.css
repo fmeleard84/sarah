@@ -1,0 +1,1188 @@
+/*
+ * Landing de pré-lancement (brief de Sarah, maquettes Claude Design du 6 novembre).
+ * Tout est isolé sous .lp : la landing a sa propre typographie (Cormorant Garamond
+ * et DM Sans) et reste claire, quel que soit le thème choisi dans l'app.
+ * Tokens repris du brief, sans couleur inventée. CTA sans arrondi, pas de dégradé
+ * de fond (seuls des voiles sur photo pour la lisibilité du texte).
+ */
+.lp {
+  --canvas: #fefcfa;
+  --surface: #faf3ef;
+  --ink: #2c2825;
+  --ink-2: #6b635d;
+  --ink-3: #a39a92;
+  --rule: #e5ddd4;
+  --slate: #558bbb;
+  --slate-2: #4a7ba6;
+  --rose: #c16780;
+  --bronze: #957e45;
+  --night: #1a1714;
+  --pad: clamp(24px, 6vw, 86px);
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-quiet: cubic-bezier(0.4, 0, 0.2, 1);
+
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--lp-sans), "DM Sans", system-ui, sans-serif;
+  font-size: 18px;
+  line-height: 1.6;
+  overflow-x: clip;
+}
+.lp a {
+  color: inherit;
+  text-decoration: none;
+}
+.lp img {
+  display: block;
+}
+
+/* Typographie */
+.lp-display {
+  font-family: var(--lp-serif), "Cormorant Garamond", Georgia, serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  line-height: 0.98;
+  letter-spacing: 0.005em;
+}
+.lp-h2 {
+  font-size: clamp(40px, 4.7vw, 72px);
+}
+.lp-serif-it {
+  font-family: var(--lp-serif), "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+}
+.lp-caps {
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.lp-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+  padding: 0 34px;
+  background: var(--slate);
+  color: var(--canvas) !important;
+  border-radius: 0;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 500;
+  transition: background 0.3s var(--ease), transform 0.3s var(--ease);
+}
+.lp-cta:hover {
+  background: var(--slate-2);
+  transform: translateY(-2px);
+}
+.lp-cta:focus-visible,
+.lp a:focus-visible,
+.lp button:focus-visible {
+  outline: 2px solid var(--slate);
+  outline-offset: 3px;
+}
+.lp-underline {
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 6px;
+}
+
+/* Révélation au scroll (classe posée par LandingEffects) */
+.lp [data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.9s var(--ease), transform 0.9s var(--ease);
+}
+.lp [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* 00 · Nav */
+.lp-nav {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px var(--pad);
+  color: var(--canvas);
+  transition: background 0.5s var(--ease-quiet), padding 0.5s var(--ease-quiet);
+}
+.lp-nav.is-solid {
+  background: rgb(44 40 37 / 0.94);
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+.lp-wordmark {
+  font-family: var(--lp-serif), "Cormorant Garamond", Georgia, serif;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 21px;
+  line-height: 1;
+}
+.lp-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.lp-nav-links .sep,
+.lp-nav-links .login {
+  opacity: 0.6;
+}
+.lp-nav-links .short {
+  display: none;
+}
+
+/* 01 · Hero, recouvert par la rupture au scroll */
+.lp-stack {
+  position: relative;
+}
+.lp-hero {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  min-height: 600px;
+  overflow: hidden;
+  color: var(--canvas);
+  background: #1d4a5e;
+}
+.lp-hero picture,
+.lp-hero img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 62% 30%;
+}
+.lp-hero img {
+  animation: lp-kenburns 18s var(--ease-quiet) infinite alternate;
+}
+.lp-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgb(20 30 36 / 0.55), rgb(20 30 36 / 0) 55%);
+}
+.lp-hero-body {
+  position: absolute;
+  z-index: 1;
+  left: var(--pad);
+  right: var(--pad);
+  bottom: clamp(48px, 7vh, 72px);
+}
+.lp-hero h1 {
+  font-size: clamp(52px, 7.4vw, 112px);
+}
+.lp-hero h1 .mob {
+  display: none;
+}
+.lp-hero-sub {
+  margin-top: 40px;
+  font-size: 19px;
+}
+.lp-hero-row {
+  margin-top: 36px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 24px;
+}
+.lp-micro {
+  font-size: 12px;
+  opacity: 0.75;
+}
+@keyframes lp-kenburns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.06) translate(-1%, -1%);
+  }
+}
+
+/* 02 · Rupture */
+.lp-rupture {
+  position: relative;
+  z-index: 2;
+  height: 100svh;
+  min-height: 560px;
+  overflow: hidden;
+  background: #0d0f0b;
+  color: var(--canvas);
+  display: grid;
+  place-items: center;
+}
+.lp-rupture img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 40% 50%;
+  opacity: 0.9;
+}
+.lp-rupture-body {
+  position: relative;
+  text-align: center;
+  padding: 0 var(--pad);
+  transform: translateX(min(4vw, 48px));
+}
+.lp-rupture h2 {
+  font-size: clamp(48px, 6.2vw, 92px);
+  line-height: 1;
+  max-width: 8.5ch;
+  margin: 0 auto;
+  text-shadow: 0 2px 30px rgb(0 0 0 / 0.35);
+}
+.lp-rupture p {
+  margin: 36px auto 0;
+  max-width: 11ch;
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+/* 03 · Le problème : épinglé et piloté par le scroll (desktop), carrousel (mobile) */
+.lp-problem {
+  position: relative;
+  height: 400vh;
+  background: var(--canvas);
+}
+.lp-problem-pin {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  cursor: pointer;
+}
+.lp-moment {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.9s var(--ease-quiet), visibility 0s linear 0.9s;
+}
+.lp-moment.is-active {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.9s var(--ease-quiet), visibility 0s;
+}
+.lp-moment-text {
+  align-self: center;
+  padding: 0 clamp(24px, 5vw, 80px);
+}
+.lp-moment-text h3 {
+  font-size: clamp(40px, 4.6vw, 68px);
+  line-height: 0.98;
+  max-width: 13ch;
+}
+.lp-moment-img {
+  position: relative;
+  overflow: hidden;
+  background: var(--ink);
+}
+.lp-moment-img img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.lp-moment-final {
+  grid-template-columns: 1fr;
+  place-items: center;
+  text-align: center;
+  background: var(--surface);
+  padding: 0 var(--pad);
+}
+.lp-moment-final p:first-child {
+  font-size: clamp(40px, 4.6vw, 70px);
+  line-height: 1.1;
+  max-width: 16ch;
+}
+.lp-moment-final p:last-child {
+  margin-top: 28px;
+}
+.lp-dots {
+  position: absolute;
+  z-index: 2;
+  left: clamp(24px, 5vw, 80px);
+  bottom: 40px;
+  display: flex;
+  gap: 10px;
+}
+.lp-dots span {
+  width: 24px;
+  height: 1px;
+  background: var(--ink-3);
+  transition: background 0.4s var(--ease);
+}
+.lp-dots span.on {
+  background: var(--ink);
+}
+
+/* 04 · Bandeau early adopter */
+.lp-band {
+  position: relative;
+  z-index: 3;
+  background: var(--ink);
+  color: var(--canvas);
+  padding: 56px var(--pad);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px 48px;
+}
+.lp-band p {
+  max-width: 34ch;
+  font-size: 19px;
+  line-height: 1.55;
+}
+.lp-band-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+/* 05 · Comment ça marche */
+.lp-how {
+  background: var(--surface);
+  padding: clamp(80px, 10vw, 120px) var(--pad) 0;
+  overflow: hidden;
+}
+.lp-steps {
+  margin-top: clamp(56px, 6vw, 84px);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px clamp(32px, 4vw, 64px);
+}
+.lp-step-num {
+  font-family: var(--lp-serif), "Cormorant Garamond", Georgia, serif;
+  font-size: 92px;
+  line-height: 0.6;
+  color: var(--rule);
+  display: block;
+  height: 40px;
+}
+.lp-step h3 {
+  position: relative;
+  margin-bottom: 18px;
+}
+.lp-step p {
+  color: var(--ink-2);
+  font-size: 16px;
+  line-height: 1.65;
+  max-width: 36ch;
+}
+.lp-phones {
+  margin-top: clamp(64px, 6vw, 90px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0;
+  height: clamp(420px, 40vw, 560px);
+}
+.lp-phone {
+  flex: none;
+  width: clamp(230px, 20vw, 290px);
+  aspect-ratio: 9 / 19;
+  border: 8px solid #111;
+  border-bottom-width: 0;
+  border-radius: 44px 44px 0 0;
+  background: var(--canvas);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 40px 80px rgb(44 40 37 / 0.18);
+}
+.lp-phone::before {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  top: 12px;
+  left: 50%;
+  width: 74px;
+  height: 22px;
+  margin-left: -37px;
+  border-radius: 999px;
+  background: #111;
+}
+.lp-phones .lp-phone:nth-child(1) {
+  transform: translate(16px, 36px) rotate(-6deg);
+}
+.lp-phones .lp-phone:nth-child(2) {
+  z-index: 2;
+}
+.lp-phones .lp-phone:nth-child(3) {
+  transform: translate(-16px, 36px) rotate(6deg);
+}
+.lp-phone-screen {
+  position: absolute;
+  inset: 0;
+  padding: 56px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.lp-tarot {
+  border: 1px solid var(--bronze);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 18px 30px rgb(44 40 37 / 0.22);
+  background: var(--ink);
+}
+.lp-tarot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.lp-phone .lp-tarot {
+  width: 64%;
+  aspect-ratio: 848 / 1264;
+}
+.lp-demo-drawn {
+  margin-top: 18px;
+  font-size: 15px;
+  color: var(--ink);
+}
+.lp-demo-drawn b {
+  font-family: var(--lp-sans), "DM Sans", sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--rose);
+}
+.lp-demo-btn {
+  margin-top: 16px;
+  background: var(--slate);
+  color: var(--canvas);
+  padding: 11px 18px;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.lp-phone-chat {
+  justify-content: flex-start;
+  align-items: stretch;
+  text-align: left;
+  gap: 12px;
+}
+.lp-chat-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--rule);
+}
+.lp-chat-head .lp-tarot {
+  width: 38px;
+  aspect-ratio: 848 / 1264;
+  border-radius: 3px;
+  box-shadow: none;
+}
+.lp-chat-head strong {
+  display: block;
+  font-family: var(--lp-serif), "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 18px;
+  color: var(--ink);
+  line-height: 1.1;
+}
+.lp-chat-head span {
+  font-size: 10px;
+  color: var(--ink-3);
+}
+.lp-chat-label {
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.lp-chat-quote {
+  font-family: var(--lp-serif), "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.35;
+  color: var(--ink);
+}
+.lp-chat-reply {
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+.lp-chat-ask {
+  align-self: flex-end;
+  background: var(--ink);
+  color: var(--canvas);
+  padding: 7px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+}
+.lp-clarity {
+  padding: clamp(64px, 8vw, 110px) var(--pad);
+  text-align: center;
+  font-size: clamp(32px, 3.4vw, 50px);
+  line-height: 1.2;
+  background: var(--canvas);
+}
+
+/* 06 · Les decks : bandeau défilant en boucle */
+.lp-decks {
+  background: var(--ink);
+  color: var(--canvas);
+  padding: clamp(80px, 10vw, 120px) 0 clamp(80px, 9vw, 120px);
+  overflow: hidden;
+}
+.lp-decks-head {
+  padding: 0 var(--pad);
+}
+.lp-decks-head p {
+  margin-top: 20px;
+  color: rgb(254 252 250 / 0.7);
+  font-size: 17px;
+}
+.lp-marquee {
+  margin-top: clamp(56px, 6vw, 80px);
+  display: flex;
+  width: max-content;
+  animation: lp-marquee 70s linear infinite;
+}
+.lp-marquee:hover {
+  animation-play-state: paused;
+}
+.lp-deck {
+  flex: none;
+  width: clamp(200px, 23vw, 330px);
+  margin-right: clamp(28px, 3vw, 48px);
+}
+.lp-deck:nth-child(odd) {
+  transform: rotate(-2deg);
+}
+.lp-deck:nth-child(even) {
+  transform: translateY(40px) rotate(1.5deg);
+}
+.lp-deck .lp-tarot {
+  aspect-ratio: 848 / 1264;
+  border-radius: 4px;
+}
+.lp-deck h3 {
+  margin-top: 24px;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.lp-deck p {
+  margin-top: 8px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(254 252 250 / 0.55);
+}
+.lp-deck-exclusive .lp-tarot {
+  position: relative;
+}
+.lp-deck-exclusive .lp-tarot img {
+  filter: blur(14px) saturate(0.7);
+  transform: scale(1.2);
+  opacity: 0.6;
+}
+.lp-deck-exclusive .lp-tarot span {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  text-align: center;
+  font-family: var(--lp-serif), "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 26px;
+  line-height: 1.2;
+}
+@keyframes lp-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* 07 · Témoignages */
+.lp-proof {
+  padding: clamp(80px, 10vw, 120px) var(--pad);
+  text-align: center;
+}
+.lp-proof > p {
+  margin-top: 18px;
+  font-size: 15px;
+  color: var(--ink-3);
+}
+.lp-quotes {
+  margin: clamp(48px, 5vw, 64px) auto 0;
+  max-width: 400px;
+  display: grid;
+  gap: clamp(56px, 6vw, 80px);
+}
+.lp-quote {
+  position: relative;
+}
+.lp-quote::before {
+  content: "\201C";
+  position: absolute;
+  left: -10px;
+  top: -34px;
+  font-family: var(--lp-serif), "Cormorant Garamond", Georgia, serif;
+  font-size: 84px;
+  line-height: 1;
+  color: var(--rule);
+}
+.lp-quote blockquote {
+  position: relative;
+  font-size: clamp(28px, 2.4vw, 34px);
+  line-height: 1.45;
+}
+.lp-quote figcaption {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+/* 08 · L'art du tirage */
+.lp-art {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100svh;
+  background: var(--ink);
+  color: var(--canvas);
+}
+.lp-art-text {
+  align-self: center;
+  padding: 80px var(--pad);
+}
+.lp-art-text p {
+  margin-top: 40px;
+  max-width: 34ch;
+  color: rgb(254 252 250 / 0.78);
+  font-size: 17px;
+  line-height: 1.75;
+}
+.lp-art-text a {
+  display: inline-block;
+  margin-top: 48px;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.lp-art-visual {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: #0e2a30;
+  min-height: 560px;
+}
+.lp-art-bg {
+  position: absolute;
+  inset: -12%;
+  width: 124%;
+  height: 124%;
+  object-fit: cover;
+  filter: blur(38px) saturate(1.25) brightness(0.8);
+}
+.lp-art-visual .lp-phone {
+  width: clamp(240px, 21vw, 300px);
+  border-bottom-width: 8px;
+  border-radius: 44px;
+  transform: rotate(4deg);
+  box-shadow: 0 40px 90px rgb(0 0 0 / 0.45);
+}
+.lp-art-visual .lp-phone img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 09 · Le rituel */
+.lp-ritual {
+  display: grid;
+  grid-template-columns: 40% 1fr;
+  min-height: 100svh;
+  background: var(--surface);
+}
+.lp-ritual-img {
+  position: relative;
+  min-height: 520px;
+}
+.lp-ritual-img img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.lp-ritual-text {
+  align-self: center;
+  padding: 80px clamp(24px, 5vw, 72px);
+  max-width: 640px;
+}
+.lp-ritual-text .lp-caps {
+  color: var(--ink-2);
+  font-size: 11px;
+}
+.lp-ritual-text h2 {
+  margin-top: 56px;
+  font-size: clamp(36px, 3.2vw, 46px);
+  line-height: 1.2;
+}
+.lp-ritual-text p {
+  margin-top: 36px;
+  color: var(--ink-2);
+  font-size: 17px;
+  line-height: 1.75;
+  max-width: 44ch;
+}
+.lp-ritual-text .rhythm {
+  margin-top: 40px;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+/* 10 · Rejoindre */
+.lp-join {
+  background: var(--ink);
+  color: var(--canvas);
+  padding: clamp(110px, 12vw, 170px) var(--pad) clamp(80px, 8vw, 110px);
+  scroll-margin-top: 0;
+}
+.lp-join h2 {
+  font-size: clamp(48px, 5.6vw, 82px);
+  max-width: 10ch;
+}
+.lp-join-sub {
+  margin-top: 48px;
+  max-width: 34ch;
+  font-size: 19px;
+  color: rgb(254 252 250 / 0.85);
+}
+.lp-join ul {
+  margin-top: 40px;
+  display: grid;
+  gap: 12px;
+  font-size: 16px;
+  color: rgb(254 252 250 / 0.72);
+}
+.lp-join-action {
+  margin-top: 48px;
+  max-width: 380px;
+  display: grid;
+  gap: 16px;
+}
+.lp-join-action .lp-cta {
+  width: 100%;
+}
+.lp-join-action small {
+  font-size: 12px;
+  color: rgb(254 252 250 / 0.55);
+}
+.lp-spots {
+  font-size: 14px;
+  color: var(--canvas);
+}
+
+/* 11 · FAQ */
+.lp-faq {
+  padding: clamp(80px, 10vw, 110px) var(--pad);
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  gap: 40px;
+}
+.lp-faq h2 {
+  font-size: clamp(40px, 4vw, 58px);
+}
+.lp-faq-list {
+  border-top: 1px solid var(--rule);
+}
+.lp-faq-item {
+  border-bottom: 1px solid var(--rule);
+}
+.lp-faq-item button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px 0;
+  text-align: left;
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+}
+.lp-faq-item button i {
+  flex: none;
+  font-style: normal;
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--slate);
+  transition: transform 0.4s var(--ease);
+}
+.lp-faq-item button[aria-expanded="true"] i {
+  transform: rotate(45deg);
+}
+.lp-faq-a {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.5s var(--ease);
+}
+.lp-faq-a.open {
+  grid-template-rows: 1fr;
+}
+.lp-faq-a > div {
+  overflow: hidden;
+}
+.lp-faq-a p {
+  padding-bottom: 28px;
+  max-width: 60ch;
+  color: var(--ink-2);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+/* 12 · En voir plus */
+.lp-more {
+  background: var(--surface);
+  padding: clamp(72px, 8vw, 100px) var(--pad);
+  text-align: center;
+}
+.lp-more p {
+  font-size: clamp(34px, 3.2vw, 46px);
+  line-height: 1.2;
+}
+.lp-more nav {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  gap: 56px;
+}
+
+/* 13 · Galerie finale */
+.lp-gallery {
+  position: relative;
+  height: min(100svh, 760px);
+  min-height: 520px;
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--canvas);
+}
+.lp-gallery-cols {
+  position: absolute;
+  inset: 0 -40px;
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+}
+.lp-gallery-col {
+  flex: none;
+  width: clamp(84px, 7.6vw, 112px);
+}
+.lp-gallery-track {
+  display: grid;
+  gap: 24px;
+  animation: lp-up var(--d, 60s) linear infinite;
+}
+.lp-gallery-col:nth-child(even) .lp-gallery-track {
+  animation-direction: reverse;
+}
+.lp-gallery .lp-tarot {
+  aspect-ratio: 848 / 1264;
+  border-radius: 3px;
+  box-shadow: none;
+}
+@keyframes lp-up {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+.lp-gallery-mark {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.2em;
+  text-align: center;
+  font-family: var(--lp-serif), "Cormorant Garamond", Georgia, serif;
+  text-transform: uppercase;
+  font-size: clamp(64px, 11vw, 168px);
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: 0 4px 40px rgb(0 0 0 / 0.4);
+}
+.lp-top {
+  position: absolute;
+  right: var(--pad);
+  bottom: 28px;
+  font-size: 12px;
+  color: rgb(254 252 250 / 0.75);
+}
+
+/* 14 · Footer */
+.lp-footer {
+  background: var(--night);
+  color: rgb(254 252 250 / 0.75);
+  min-height: 80px;
+  padding: 20px var(--pad);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  font-size: 14px;
+}
+.lp-footer .left,
+.lp-footer .right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+/* Tablette */
+@media (max-width: 900px) {
+  .lp-steps {
+    grid-template-columns: 1fr;
+  }
+  .lp-faq {
+    grid-template-columns: 1fr;
+  }
+  .lp-ritual {
+    grid-template-columns: 1fr;
+  }
+  .lp-ritual-img {
+    min-height: 0;
+    aspect-ratio: 4 / 5;
+  }
+  .lp-ritual-text {
+    padding: 64px var(--pad) 88px;
+  }
+  .lp-ritual-text h2 {
+    margin-top: 32px;
+  }
+}
+
+/* Mobile (sous 640px) : les cinq différences du brief, plus le carrousel du problème */
+@media (max-width: 640px) {
+  .lp {
+    font-size: 16px;
+  }
+  .lp-nav {
+    padding: 18px 24px;
+  }
+  .lp-wordmark {
+    font-size: 17px;
+    max-width: 7em;
+  }
+  .lp-nav-links {
+    font-size: 10px;
+    gap: 8px;
+  }
+  .lp-nav-links .long {
+    display: none;
+  }
+  .lp-nav-links .short {
+    display: inline;
+  }
+  .lp-hero h1 .desk {
+    display: none;
+  }
+  .lp-hero h1 .mob {
+    display: block;
+  }
+  .lp-hero h1 {
+    font-size: clamp(46px, 14vw, 64px);
+  }
+  .lp-hero-sub {
+    margin-top: 28px;
+    font-size: 16px;
+  }
+  .lp-hero-row {
+    margin-top: 32px;
+  }
+  .lp-hero-row .lp-cta,
+  .lp-band-cta .lp-cta {
+    width: 100%;
+  }
+  .lp-band-cta {
+    width: 100%;
+    align-items: stretch;
+  }
+  .lp-rupture-body {
+    transform: none;
+  }
+  .lp-rupture h2 {
+    font-size: 44px;
+  }
+  .lp-gallery-mark {
+    font-size: 15vw;
+    bottom: -0.15em;
+  }
+
+  .lp-problem {
+    height: auto;
+  }
+  .lp-problem-pin {
+    position: relative;
+    height: auto;
+    overflow: visible;
+    cursor: default;
+  }
+  .lp-carousel {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .lp-carousel::-webkit-scrollbar {
+    display: none;
+  }
+  .lp-moment,
+  .lp-moment.is-active {
+    position: relative;
+    flex: none;
+    width: 100%;
+    height: 82svh;
+    min-height: 520px;
+    scroll-snap-align: start;
+    opacity: 1;
+    visibility: visible;
+    display: block;
+    color: var(--canvas);
+  }
+  .lp-moment-img {
+    position: absolute;
+    inset: 0;
+  }
+  .lp-moment:not(.lp-moment-final) .lp-moment-img::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgb(20 18 16 / 0.6), rgb(20 18 16 / 0) 60%);
+  }
+  .lp-moment-text {
+    position: absolute;
+    z-index: 1;
+    left: 24px;
+    right: 24px;
+    bottom: 48px;
+    padding: 0;
+  }
+  .lp-moment-text h3 {
+    font-size: clamp(36px, 10.5vw, 46px);
+  }
+  .lp-moment-final,
+  .lp-moment-final.is-active {
+    display: grid;
+    color: var(--ink);
+  }
+  .lp-dots {
+    left: 24px;
+    bottom: 24px;
+  }
+  .lp-dots span {
+    background: rgb(254 252 250 / 0.45);
+  }
+  .lp-dots span.on {
+    background: var(--canvas);
+  }
+  .lp-dots.final span {
+    background: var(--ink-3);
+  }
+  .lp-dots.final span.on {
+    background: var(--ink);
+  }
+
+  .lp-phones {
+    justify-content: flex-start;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 16px;
+    height: auto;
+    padding-bottom: 0;
+    margin-left: calc(var(--pad) * -1);
+    margin-right: calc(var(--pad) * -1);
+    padding-left: var(--pad);
+    scrollbar-width: none;
+  }
+  .lp-phones .lp-phone,
+  .lp-phones .lp-phone:nth-child(1),
+  .lp-phones .lp-phone:nth-child(3) {
+    transform: none;
+    width: 250px;
+    scroll-snap-align: start;
+    border-bottom-width: 8px;
+    border-radius: 40px;
+    box-shadow: none;
+  }
+  .lp-art {
+    grid-template-columns: 1fr;
+  }
+  .lp-art-visual {
+    order: -1;
+    min-height: 0;
+    aspect-ratio: 3 / 4;
+  }
+  .lp-art-visual .lp-phone {
+    width: 56%;
+  }
+  .lp-quote::before {
+    left: 50%;
+    margin-left: -18px;
+  }
+  .lp-more nav {
+    gap: 32px;
+  }
+  .lp-footer .mag {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp *,
+  .lp *::before,
+  .lp *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .lp [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+  .lp-marquee {
+    width: auto;
+    overflow-x: auto;
+  }
+}

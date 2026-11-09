@@ -12,6 +12,8 @@ Recette : https://morningcards.vaya.rip (mobile d'abord, web responsive, pas de 
 - `scripts/import-decks.py` : importe les decks (images dans `web/public/decks`, lignes en base).
 - `scripts/e2e-onboarding.mjs` : parcours complet en navigateur mobile (Playwright de /opt/card).
 - `docs/DECISIONS.md` : arbitrages par défaut à faire valider par Sarah.
+- `web/src/components/landing/` : landing de pré-lancement (brief de Sarah), servie sur `/` aux nouvelles visiteuses. Typographie propre (Cormorant Garamond, DM Sans), styles isolés sous `.lp`, photos dans `web/public/lp`.
+- `web/src/app/magazine/` : Magazine et articles (table `articles`, rédaction dans `/admin/magazine`, images dans le bucket `magazine`).
 - `web/src/app/admin/` : espace d'administration (`/admin`, réservé aux profils `is_admin`, 404 sinon). Decks et images des cartes (bucket Storage public `decks`), noms des arcanes, textes de l'interface (table `ui_texts`, qui surcharge `i18n.ts` clé par clé), offres des comptes. Traduction par le LLM.
 
 ## Infra (serveur partagé : ne rien casser)

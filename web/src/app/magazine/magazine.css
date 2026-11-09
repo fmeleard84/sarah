@@ -1,0 +1,322 @@
+/*
+ * Magazine et article (brief de Sarah, maquettes du 6 novembre). Même typographie
+ * et mêmes tokens que la landing, isolés sous .mg. Mobile d'abord ; sur ordinateur,
+ * pleine largeur avec 10 % de marge, pas de colonne étroite centrée.
+ */
+.mg {
+  --canvas: #fefcfa;
+  --surface: #faf3ef;
+  --ink: #2c2825;
+  --ink-2: #6b635d;
+  --ink-3: #8f867e;
+  --rule: #e5ddd4;
+  --slate: #558bbb;
+  --slate-2: #4a7ba6;
+  --rose: #c16780;
+  --bronze: #957e45;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  min-height: 100dvh;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--lp-sans), "DM Sans", system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.75;
+}
+.mg a {
+  color: inherit;
+  text-decoration: none;
+}
+.mg img {
+  display: block;
+}
+.mg :focus-visible {
+  outline: 2px solid var(--slate);
+  outline-offset: 3px;
+}
+.mg-caps {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+.mg-it {
+  font-family: var(--lp-serif), "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+}
+
+/* En-tête */
+.mg-head {
+  padding: 28px 10% 22px;
+  text-align: center;
+  border-bottom: 1px solid var(--rule);
+}
+.mg-head a {
+  display: inline-block;
+}
+.mg-head strong {
+  display: block;
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.mg-head span {
+  display: block;
+  margin-top: 6px;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--rose);
+  font-weight: 500;
+}
+
+/* Liste */
+.mg-list {
+  padding: 40px 10% 64px;
+  display: grid;
+  gap: 48px 40px;
+}
+@media (min-width: 760px) {
+  .mg-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .mg-list > :first-child {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 40px;
+    align-items: end;
+  }
+  .mg-list > :first-child h2 {
+    font-size: 34px;
+  }
+  .mg-list > :first-child .cover {
+    aspect-ratio: 3 / 2;
+  }
+}
+@media (min-width: 1100px) {
+  .mg-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.mg-card .cover {
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--surface);
+}
+.mg-card .cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s var(--ease);
+}
+.mg-card:hover .cover img {
+  transform: scale(1.02);
+}
+.mg-card .meta {
+  padding-top: 20px;
+}
+.mg-card h2 {
+  margin-top: 10px;
+  font-size: 22px;
+  line-height: 1.3;
+  font-weight: 500;
+}
+.mg-card p.ex {
+  margin-top: 10px;
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.mg-date {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.mg-empty {
+  padding: 96px 10%;
+  text-align: center;
+  font-size: 28px;
+}
+
+/* Article */
+.mg-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 10%;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.mg-article {
+  display: grid;
+}
+.mg-cover {
+  background: var(--surface);
+}
+.mg-cover img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
+.mg-body {
+  padding: 28px 24px 48px;
+}
+.mg-body h1 {
+  margin-top: 12px;
+  font-size: clamp(26px, 3vw, 40px);
+  line-height: 1.25;
+  font-weight: 500;
+}
+.mg-updated {
+  font-size: 14px;
+  color: var(--ink-3);
+}
+.mg-news {
+  margin: 40px 0 8px;
+  padding: 24px;
+  background: var(--surface);
+  border-radius: 4px;
+}
+.mg-news p {
+  margin-top: 10px;
+  font-size: 14px;
+  color: var(--ink-2);
+  line-height: 1.65;
+}
+.mg-text {
+  margin-top: 32px;
+}
+.mg-text > * + * {
+  margin-top: 24px;
+}
+.mg-text p {
+  font-size: 16px;
+  line-height: 1.85;
+}
+.mg-text h2 {
+  margin-top: 48px;
+  font-size: 20px;
+  font-weight: 500;
+}
+.mg-text blockquote {
+  margin: 48px auto;
+  max-width: 24ch;
+  text-align: center;
+  font-family: var(--lp-serif), "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 26px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.mg-text figure {
+  margin: 40px -24px;
+}
+.mg-text figure img {
+  width: 100%;
+}
+.mg-text figcaption {
+  padding: 10px 24px 0;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.mg-deck {
+  margin-top: 64px;
+  padding-top: 48px;
+  border-top: 1px solid var(--rule);
+}
+.mg-deck .mg-caps {
+  color: var(--rose);
+}
+.mg-deck h2 {
+  margin-top: 12px;
+  font-size: 20px;
+  font-weight: 500;
+}
+.mg-deck p {
+  margin-top: 16px;
+}
+.mg-deck .card {
+  margin: 36px auto 0;
+  width: 56%;
+  max-width: 260px;
+  aspect-ratio: 848 / 1264;
+  border: 1px solid var(--bronze);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 18px 30px rgb(44 40 37 / 0.18);
+}
+.mg-deck .card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.mg-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 32px;
+  min-height: 54px;
+  padding: 0 28px;
+  background: var(--slate);
+  color: var(--canvas) !important;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 500;
+  transition: background 0.3s var(--ease), transform 0.3s var(--ease);
+}
+.mg-cta:hover {
+  background: var(--slate-2);
+  transform: translateY(-2px);
+}
+.mg-draft {
+  padding: 10px 10%;
+  background: var(--surface);
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+/* Ordinateur : image épinglée à gauche, texte à droite */
+@media (min-width: 900px) {
+  .mg-article {
+    grid-template-columns: 1fr 1fr;
+    padding: 0 10% 0 0;
+    gap: clamp(40px, 6vw, 96px);
+    align-items: start;
+  }
+  .mg-cover {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+  }
+  .mg-cover img {
+    height: 100%;
+    aspect-ratio: auto;
+  }
+  .mg-body {
+    padding: 64px 0 96px;
+    max-width: 640px;
+  }
+  .mg-text figure {
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .mg-text figcaption {
+    padding-left: 0;
+  }
+}
+
+/* Pied de page */
+.mg-foot {
+  padding: 48px 10% 56px;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  font-size: 13px;
+  color: var(--ink-3);
+}

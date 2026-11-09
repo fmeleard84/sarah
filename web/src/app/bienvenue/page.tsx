@@ -6,8 +6,8 @@ import { DeckPicker } from "./DeckPicker";
  * Onboarding, étape 1 : bienvenue et choix du deck, sans compte.
  * La personnalisation d'abord. Le compte vient après la première conversation.
  */
-export default async function Welcome() {
-  const [locale, decks, { profile }] = await Promise.all([getLocale(), listDecks(), getSession()]);
+export default async function Welcome({ searchParams }: { searchParams: Promise<{ deck?: string }> }) {
+  const [locale, decks, { profile }, sp] = await Promise.all([getLocale(), listDecks(), getSession(), searchParams]);
   const open = decks.filter((d) => d.is_open);
 
   const items = await Promise.all(
@@ -25,5 +25,5 @@ export default async function Welcome() {
     }),
   );
 
-  return <DeckPicker locale={locale} decks={items} hasSession={Boolean(profile)} />;
+  return <DeckPicker locale={locale} decks={items} hasSession={Boolean(profile)} initial={sp.deck} />;
 }

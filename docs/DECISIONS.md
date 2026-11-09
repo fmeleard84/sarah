@@ -34,7 +34,16 @@ Source : brief dev de Sarah (doc Claude « Morning Cards · Brief dev », maquet
 | Offre des 100 premières | Les 100 premiers comptes créés reçoivent Early adopter : droits de Clarity pendant 7 jours, puis Intention. Ensuite, Exploration. Place réservée à l'inscription (table `early_adopters`), libérée si le compte est supprimé | `EARLY_ADOPTER_SPOTS` et `PLANS.early` dans `plans.ts` |
 | Mesure du test marché | A = visiteurs, B = visiteurs qui tirent, C = comptes créés. Cookie `mc_vid`, admin et recette exclus | `web/src/lib/track.ts`, `/admin/mesure` |
 
-En attente : export du dossier `project/` des maquettes (HTML, CSS, JS, images).
+| Photos de la landing | Les originaux de Sarah (`source/Mc_Dev&Decks/Mc_Landing Page/Images LP`), convertis en WebP dans `web/public/lp`. Les écrans de téléphone sont recréés en HTML avec les vraies cartes (deck Cut, Les Amoureux) ; le fond de « L'art du tirage » est une carte Egon floutée | `web/src/components/landing` |
+| Textes de la landing | Ceux des maquettes, sinon le fichier « TRADUCTIONS LANDING PAGE » (FAQ comprise). Modifiables dans l'admin (clés `landing.*`) | `i18n.ts` |
+| Formulaires email des sections 04 et 10 | Remplacés par le CTA du tirage direct ; « Pas de spam… » devient « Tire ta première carte. Ton compte se crée ensuite » et la section 10 affiche les places restantes (« Encore 87 places sur 100 ») | `landing.*` dans `i18n.ts` |
+| Adresse de la landing | `/` pour une première visite ; qui a déjà choisi un deck va à `/tirage`. `/?landing` la montre à tout le monde | `web/src/app/page.tsx` |
+| Liens Magazine et Instagram | Magazine affiché dès qu'un article est publié ; Instagram dès que `INSTAGRAM_URL` est posé dans `.env.local` | `Landing.tsx` |
+| Pages légales | Confidentialité, Mentions légales, Contact non affichées : il faut l'identité de l'éditeur (pas encore de société) | Footer de la landing |
+| Magazine | Articles rédigés dans l'admin (`/admin/magazine`) : rubrique, dates, encart actu, corps en texte simple (« > » exergue, « ## » intertitre, images), deck lié. Aucun article publié pour l'instant | `articles`, `web/src/app/magazine` |
+| Indexation | Landing et Magazine restent hors des moteurs sur la recette. Sur le domaine définitif : `SITE_INDEXABLE=1` et `NEXT_PUBLIC_SITE_URL` dans `.env.local` | `SITE_ROBOTS` dans `magazine.ts` |
+| Mesure des CTA | Chaque clic « early adopter » est compté par emplacement (événement `cta`), visible dans `/admin/mesure` | `track.ts` |
+
 
 ## Hors V1 (prévu ensuite)
 - WhatsApp (offre Exploration par numéro de téléphone), notifications : V1.1.
