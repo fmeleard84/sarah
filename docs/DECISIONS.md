@@ -31,9 +31,10 @@ Source : brief dev de Sarah (doc Claude « Morning Cards · Brief dev », maquet
 | Intégration | Landing et Magazine dans l'app Next existante (même domaine, tokens, mesure, Brevo), pas de site statique séparé | `web/src/app` |
 | Article Hilma af Klint | Non repris : son encart (exposition au Grand Palais jusqu'au 30 août 2026) n'est plus à jour | Magazine (à venir) |
 | Témoignages (Clara, Emma, Léa) | Réels, conservés | Landing (à venir) |
+| Offre des 100 premières | Les 100 premiers comptes créés reçoivent Early adopter : droits de Clarity pendant 7 jours, puis Intention. Ensuite, Exploration. Place réservée à l'inscription (table `early_adopters`), libérée si le compte est supprimé | `EARLY_ADOPTER_SPOTS` et `PLANS.early` dans `plans.ts` |
 | Mesure du test marché | A = visiteurs, B = visiteurs qui tirent, C = comptes créés. Cookie `mc_vid`, admin et recette exclus | `web/src/lib/track.ts`, `/admin/mesure` |
 
-En attente : export du dossier `project/` des maquettes (HTML, CSS, JS, images), et l'offre des 100 premières (landing : 7 jours illimités, tous les decks et le deck perso ; app : Exploration, 5 jours, 1 carte par jour).
+En attente : export du dossier `project/` des maquettes (HTML, CSS, JS, images).
 
 ## Hors V1 (prévu ensuite)
 - WhatsApp (offre Exploration par numéro de téléphone), notifications : V1.1.

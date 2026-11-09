@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/admin";
+import { EARLY_ADOPTER_SPOTS } from "@/lib/plans";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +32,11 @@ export default async function Mesure({ searchParams }: { searchParams: Promise<{
   const since = daysAgo(period.days);
 
   const db = createServiceClient();
-  const [bySource, daily] = await Promise.all([db.rpc("funnel_by_source", { since }), db.rpc("funnel_daily", { since })]);
+  const [bySource, daily, early] = await Promise.all([
+    db.rpc("funnel_by_source", { since }),
+    db.rpc("funnel_daily", { since }),
+    db.from("early_adopters").select("user_id", { count: "exact", head: true }),
+  ]);
   const sources = (bySource.data ?? []) as (Row & { source: string })[];
   const days = (daily.data ?? []) as (Row & { day: string })[];
   const total = sources.reduce((t, s) => ({ visitors: t.visitors + Number(s.visitors), drawers: t.drawers + Number(s.drawers), signups: t.signups + Number(s.signups) }), {
@@ -69,6 +74,10 @@ export default async function Mesure({ searchParams }: { searchParams: Promise<{
           </div>
         ))}
       </dl>
+
+      <p className="mt-6 text-[14px] text-ink-2">
+        Offre des cent premières : {early.count ?? 0} place{(early.count ?? 0) > 1 ? "s" : ""} prise{(early.count ?? 0) > 1 ? "s" : ""} sur {EARLY_ADOPTER_SPOTS}.
+      </p>
 
       <section className="mt-14">
         <h2 className="title text-[28px]">par source.</h2>

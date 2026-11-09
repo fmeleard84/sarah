@@ -27,7 +27,7 @@ export function HomeDraw({
   deckName,
   spreads,
   isAnonymous,
-  daysLeft,
+  trial,
   quota,
 }: {
   locale: Locale;
@@ -35,7 +35,7 @@ export function HomeDraw({
   deckName: string;
   spreads: (1 | 3 | 5)[];
   isAnonymous: boolean;
-  daysLeft: number | null;
+  trial: { plan: "exploration" | "early"; days: number } | null;
   quota: "day" | "week" | null;
 }) {
   const t = useDict(locale);
@@ -157,9 +157,9 @@ export function HomeDraw({
 
   return (
     <div className="flex min-h-[calc(100dvh-180px)] flex-col">
-      {daysLeft !== null && (
+      {trial && (
         <Link href="/offres" className="-mx-[12.5%] mb-2 flex h-9 items-center justify-between bg-surface px-[12.5%] text-[12px] text-ink/80">
-          <span className="flex-1 text-center">{t.home.exploration(daysLeft)}</span>
+          <span className="flex-1 text-center">{trial.plan === "early" ? t.home.early(trial.days) : t.home.exploration(trial.days)}</span>
           <span className="text-ink/40">›</span>
         </Link>
       )}

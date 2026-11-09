@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { sendWelcomeEmail } from "@/lib/email";
 import { track } from "@/lib/track";
+import { EARLY_ADOPTER_SPOTS } from "@/lib/plans";
 
 /**
  * Création de compte.
@@ -10,7 +11,8 @@ import { track } from "@/lib/track";
  * Pendant l'onboarding, la session est anonyme : on la convertit (email et mot
  * de passe ajoutés au même utilisateur), ce qui garde la conversation en cours
  * et le deck choisi. Hors onboarding, c'est une inscription classique.
- * L'offre Exploration démarre à cet instant.
+ * L'offre démarre à cet instant : Early adopter pour les 100 premiers comptes,
+ * Exploration ensuite.
  */
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
@@ -58,13 +60,18 @@ export async function POST(req: Request) {
     userId = data.user.id;
   }
 
+  // Une place qui ne peut pas être vérifiée ne doit pas bloquer l'inscription.
+  const { data: early, error: earlyError } = await admin.rpc("claim_early_spot", { uid: userId, cap: EARLY_ADOPTER_SPOTS });
+  if (earlyError) console.error("[signup] early", earlyError.message);
+  const plan = early === true ? "early" : "exploration";
+
   await admin
     .from("profiles")
     .update({
       first_name: firstName || null,
       birthdate,
       locale,
-      plan: "exploration",
+      plan,
       plan_started_at: new Date().toISOString(),
       onboarded_at: new Date().toISOString(),
     })
@@ -72,5 +79,5 @@ export async function POST(req: Request) {
 
   await track("signup", userId);
   sendWelcomeEmail(email, firstName, locale).catch((e) => console.error("[welcome]", e));
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, plan });
 }

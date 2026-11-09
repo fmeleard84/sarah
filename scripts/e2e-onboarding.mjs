@@ -8,6 +8,7 @@
  */
 import { createRequire } from "node:module";
 import { mkdirSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 const require = createRequire("/opt/card/package.json");
 const { chromium, devices } = require("playwright");
 
@@ -16,6 +17,7 @@ const OUT = process.env.OUT ?? "/tmp/mc-e2e";
 mkdirSync(OUT, { recursive: true });
 const shot = (p, n) => p.screenshot({ path: `${OUT}/${n}.png` });
 const step = (s) => console.log(`→ ${s}`);
+const sql = (q) => execFileSync("docker", ["exec", "-i", "morningcards-db-1", "psql", "-U", "postgres", "-tAc", q], { encoding: "utf8" }).trim();
 const failures = [];
 const check = (ok, label) => {
   console.log(`  ${ok ? "ok " : "ÉCHEC"} ${label}`);
@@ -125,7 +127,11 @@ await page.getByPlaceholder("Mot de passe").fill("motdepasse-e2e");
 await page.locator('input[type="date"]').fill("1996-04-12");
 await page.locator('input[type="checkbox"]').check();
 await page.getByRole("button", { name: "Continuer" }).click();
-await page.waitForSelector("text=ton offre exploration est activée", { timeout: 15000 });
+// Les cent premiers comptes reçoivent Early adopter, les suivants Exploration.
+const offerTitle = page.locator("div[aria-hidden=false] [role=dialog]").getByText(/tu fais partie des cent premières|ton offre exploration est activée/);
+await offerTitle.waitFor({ state: "visible", timeout: 15000 });
+const early = /cent premières/.test(await offerTitle.innerText());
+console.log(`  offre : ${early ? "Early adopter" : "Exploration"}`);
 await shot(page, "09-offre");
 await page.getByRole("button", { name: /reprendre ma conversation/i }).click();
 await page.waitForFunction(
@@ -142,6 +148,20 @@ const state = await page.evaluate(async () => {
 const mine = state.filter((m) => m.role === "user" && m.content === third).length;
 const last = state[state.length - 1];
 check(mine === 1 && last.role === "assistant", "le 3e message part une seule fois et reçoit sa réponse après l'inscription");
+
+if (early) {
+  step("Early adopter : une carte supplémentaire est tirée sans paywall");
+  await page.getByRole("button", { name: /tirer une carte/i }).first().click();
+  await page.waitForTimeout(600);
+  await page.locator('[role=dialog] button.tarot').nth(2).click();
+  await page.waitForFunction(() => document.querySelectorAll("header button.tarot").length === 2, null, { timeout: 15000 }).catch(() => {});
+  check(await page.locator("header button.tarot").count() === 2, "deuxième carte ajoutée au tirage");
+  await shot(page, "11-early-carte");
+  // Pour vérifier le paywall, la suite repasse ce compte en Exploration.
+  sql(`delete from early_adopters where user_id=(select id from auth.users where email='${email}'); update profiles set plan='exploration' where id=(select id from auth.users where email='${email}')`);
+  await page.reload();
+  await page.waitForTimeout(3000);
+}
 
 step("carte supplémentaire → paywall attendu (Exploration = 1 carte)");
 await page.getByRole("button", { name: /tirer une carte/i }).first().click();

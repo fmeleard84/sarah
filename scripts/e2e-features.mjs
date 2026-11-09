@@ -62,6 +62,9 @@ const email = `e2e-${Date.now()}@example.com`;
 const signup = await api("/api/account/signup", "POST", { email, password: "motdepasse-e2e", firstName: "Camille", birthdate: "1996-04-12", consent: true, locale: "fr" });
 check(signup.status === 200, "inscription");
 const uid = sql(`select id from auth.users where email='${email}'`);
+check(["early", "exploration"].includes(signup.body?.plan), `offre de départ : ${signup.body?.plan}`);
+// La suite teste les règles de l'offre gratuite ordinaire : on libère la place des cent premières.
+sql(`delete from early_adopters where user_id='${uid}'; update profiles set plan='exploration' where id='${uid}'`);
 
 step("My Deck : réservé à Ritual et Clarity pour le tirage");
 check((await api("/api/profile", "PATCH", { useMyDeck: true })).status === 402, "offre gratuite : tirage avec son deck refusé");

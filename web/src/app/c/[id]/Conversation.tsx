@@ -58,7 +58,7 @@ export function Conversation({
   const [keep, setKeep] = useState(false);
   const [anon, setAnon] = useState(isAnonymous);
   const [zoom, setZoom] = useState<Card | null>(null);
-  const [offer, setOffer] = useState(false);
+  const [offer, setOffer] = useState<null | "early" | "exploration">(null);
   const scroller = useRef<HTMLElement>(null);
   const anchor = useRef<HTMLDivElement>(null);
   const spacer = useRef<HTMLDivElement>(null);
@@ -175,17 +175,17 @@ export function Conversation({
     setCards(state.cards);
   }
 
-  function onSignedUp() {
+  function onSignedUp(plan: "early" | "exploration") {
     setAnon(false);
     setWall(false);
     setKeep(false);
-    setOffer(true);
+    setOffer(plan);
   }
 
   // Le rafraîchissement (session devenue un compte) attend la fermeture de
   // l'offre : lancé plus tôt, il remontait l'écran sous le bouton.
   function closeOffer() {
-    setOffer(false);
+    setOffer(null);
     router.refresh();
     const text = pending.current;
     pending.current = null;
@@ -359,10 +359,10 @@ export function Conversation({
         {keep && <SignupForm locale={locale} onDone={onSignedUp} title={t.wall.keepTitle} body={t.wall.keepBody} />}
       </Sheet>
 
-      <Sheet open={offer} onClose={closeOffer}>
+      <Sheet open={offer !== null} onClose={closeOffer}>
         <div className="pb-4 text-center">
-          <p className="display text-[30px]">{t.wall.offerTitle}</p>
-          <p className="mt-3 text-[15px] text-ink-2">{t.wall.offerBody}</p>
+          <p className="display text-[30px]">{offer === "early" ? t.wall.earlyTitle : t.wall.offerTitle}</p>
+          <p className="mt-3 text-[15px] text-ink-2">{offer === "early" ? t.wall.earlyBody : t.wall.offerBody}</p>
           <button onClick={closeOffer} className="btn-primary label mt-8 w-full">
             {t.wall.offerCta}
           </button>

@@ -19,7 +19,7 @@ export interface UserRow {
   isMe: boolean;
 }
 
-const PLAN_NAMES: Record<PlanId, string> = { exploration: "Exploration", intention: "Intention", ritual: "Ritual", clarity: "Clarity" };
+const PLAN_NAMES: Record<PlanId, string> = { exploration: "Exploration", early: "Early adopter", intention: "Intention", ritual: "Ritual", clarity: "Clarity" };
 const date = (s: string | null) => (s ? new Date(s).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" }) : "jamais");
 
 export function UsersTable({ rows }: { rows: UserRow[] }) {

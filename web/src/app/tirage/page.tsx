@@ -1,6 +1,6 @@
 import { requireSession } from "@/lib/session";
 import { createServiceClient } from "@/lib/supabase/admin";
-import { effectivePlan, explorationDaysLeft } from "@/lib/plans";
+import { effectivePlan, trialLeft } from "@/lib/plans";
 import { quotaReached } from "@/lib/conversation";
 import { drawsWithMyDeck } from "@/lib/mydeck";
 import { getDict } from "@/lib/texts";
@@ -25,7 +25,7 @@ export default async function DrawHome() {
       spreads={plan.spreads}
       isAnonymous={isAnonymous}
       quota={quota}
-      daysLeft={isAnonymous ? null : explorationDaysLeft(profile)}
+      trial={isAnonymous ? null : trialLeft(profile)}
     />
   );
 

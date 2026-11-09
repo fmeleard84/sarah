@@ -6,9 +6,11 @@
  * - Une carte supplémentaire dans une conversation consomme d'abord un crédit
  *   acheté (pack), sinon elle doit tenir dans le quota de l'offre.
  * - Pas de limite de messages : le LLM tourne sur nos serveurs (décision du 5 novembre).
+ * - Les 100 premiers comptes reçoivent Early adopter : les droits de Clarity pendant
+ *   7 jours, puis Intention (décision du 9 novembre, promesse de la landing).
  */
 
-export type PlanId = "exploration" | "intention" | "ritual" | "clarity";
+export type PlanId = "exploration" | "early" | "intention" | "ritual" | "clarity";
 
 export interface Plan {
   id: PlanId;
@@ -30,6 +32,10 @@ export const PLANS: Record<PlanId, Plan> = {
     id: "exploration", conversations: 1, period: "day", cardsPerConversation: 1,
     spreads: [1], allDecks: false, customDeck: false, priceEur: 0, durationDays: 5,
   },
+  early: {
+    id: "early", conversations: null, period: "day", cardsPerConversation: 5,
+    spreads: [1, 3, 5], allDecks: true, customDeck: true, priceEur: 0, durationDays: 7,
+  },
   intention: {
     id: "intention", conversations: 1, period: "week", cardsPerConversation: 1,
     spreads: [1], allDecks: false, customDeck: false, priceEur: 0, durationDays: null,
@@ -49,6 +55,9 @@ export const PACKS = [
   { id: "single", cards: 1, priceEur: 3 },
 ] as const;
 
+/** Places de l'offre Early adopter (« les cent premières »). */
+export const EARLY_ADOPTER_SPOTS = 100;
+
 /** Un deck personnalisé complet : une version de chacun des 22 arcanes. */
 export const MY_DECK_SIZE = 22;
 
@@ -61,7 +70,7 @@ export interface ProfileLike {
   extra_cards: number;
 }
 
-/** L'offre réellement en vigueur : Exploration expirée redevient Intention. */
+/** L'offre réellement en vigueur : Exploration ou Early adopter expirée redevient Intention. */
 export function effectivePlan(p: ProfileLike, now = new Date()): Plan {
   const plan = PLANS[p.plan];
   if (plan.durationDays) {
@@ -71,12 +80,12 @@ export function effectivePlan(p: ProfileLike, now = new Date()): Plan {
   return plan;
 }
 
-/** Jours restants d'Exploration (bandeau de l'accueil), ou null. */
-export function explorationDaysLeft(p: ProfileLike, now = new Date()): number | null {
-  if (p.plan !== "exploration") return null;
-  const end = new Date(p.plan_started_at).getTime() + PLANS.exploration.durationDays! * 86400_000;
-  const left = Math.ceil((end - now.getTime()) / 86400_000);
-  return left > 0 ? left : null;
+/** Offre gratuite limitée en cours (bandeau de l'accueil) et ses jours restants, ou null. */
+export function trialLeft(p: ProfileLike, now = new Date()): { plan: "exploration" | "early"; days: number } | null {
+  if (p.plan !== "exploration" && p.plan !== "early") return null;
+  const end = new Date(p.plan_started_at).getTime() + PLANS[p.plan].durationDays! * 86400_000;
+  const days = Math.ceil((end - now.getTime()) / 86400_000);
+  return days > 0 ? { plan: p.plan, days } : null;
 }
 
 /** Début de la période de quota en cours (jour ou semaine, heure de Paris). */

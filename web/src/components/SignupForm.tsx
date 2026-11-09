@@ -10,7 +10,7 @@ import { useDict } from "@/components/I18nProvider";
  * Pendant l'onboarding, le serveur convertit la session anonyme : la
  * conversation et le deck choisi sont conservés.
  */
-export function SignupForm({ locale, onDone, title, body }: { locale: Locale; onDone: () => void; title?: string; body?: string }) {
+export function SignupForm({ locale, onDone, title, body }: { locale: Locale; onDone: (plan: "early" | "exploration") => void; title?: string; body?: string }) {
   const t = useDict(locale);
   const [form, setForm] = useState({ firstName: "", email: "", password: "", birthdate: "", consent: false });
   const [show, setShow] = useState(false);
@@ -29,7 +29,10 @@ export function SignupForm({ locale, onDone, title, body }: { locale: Locale; on
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...form, locale }),
     });
-    if (res.ok) return onDone();
+    if (res.ok) {
+      const r = await res.json().catch(() => ({}));
+      return onDone(r.plan === "early" ? "early" : "exploration");
+    }
     const body = await res.json().catch(() => ({}));
     setError(body.error === "exists" ? t.auth.exists : body.error === "weak" ? t.auth.weak : t.auth.generic);
     setBusy(false);
