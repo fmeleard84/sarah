@@ -23,6 +23,18 @@ une valeur par défaut pour avancer ; un seul endroit à modifier pour changer d
 | My Deck | Une version par arcane, 22 cartes. Composition ouverte à tous, tirage réservé à Ritual et Clarity, deck complet exigé | `web/src/lib/mydeck.ts` |
 | Paiement | Stripe Checkout, prix créés à la volée depuis `plans.ts`, TVA non gérée à ce stade | `web/src/app/api/checkout/route.ts` |
 
+## Décisions du 9 novembre (Francis) : landing, Magazine et mesure
+Source : brief dev de Sarah (doc Claude « Morning Cards · Brief dev », maquettes Claude Design du 6 novembre).
+| Sujet | Choix | Où le changer |
+|---|---|---|
+| Appel à l'action de la landing | Tirage direct : les CTA mènent au premier tirage (`/bienvenue`), pas à une liste d'attente. Le statut « early adopter » devient l'avantage de l'inscription | Landing (à venir) |
+| Intégration | Landing et Magazine dans l'app Next existante (même domaine, tokens, mesure, Brevo), pas de site statique séparé | `web/src/app` |
+| Article Hilma af Klint | Non repris : son encart (exposition au Grand Palais jusqu'au 30 août 2026) n'est plus à jour | Magazine (à venir) |
+| Témoignages (Clara, Emma, Léa) | Réels, conservés | Landing (à venir) |
+| Mesure du test marché | A = visiteurs, B = visiteurs qui tirent, C = comptes créés. Cookie `mc_vid`, admin et recette exclus | `web/src/lib/track.ts`, `/admin/mesure` |
+
+En attente : export du dossier `project/` des maquettes (HTML, CSS, JS, images), et l'offre des 100 premières (landing : 7 jours illimités, tous les decks et le deck perso ; app : Exploration, 5 jours, 1 carte par jour).
+
 ## Hors V1 (prévu ensuite)
 - WhatsApp (offre Exploration par numéro de téléphone), notifications : V1.1.
 - Cadeaux, partage sur les réseaux, filtres de la bibliothèque, magazine. Dans le profil : FAQ, CGV, WhatsApp.
