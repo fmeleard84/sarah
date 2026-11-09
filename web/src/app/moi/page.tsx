@@ -1,31 +1,36 @@
+import { cookies } from "next/headers";
 import { requireAccount } from "@/lib/session";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { listArcana } from "@/lib/decks";
 import { effectivePlan } from "@/lib/plans";
 import { lifePath } from "@/lib/numerology";
+import { THEME_COOKIE, isTheme } from "@/lib/theme";
 import { AppShell } from "@/components/AppShell";
-import { ProfileView } from "./ProfileView";
+import { ProfileView, type Draw } from "./ProfileView";
 
-/** Profil : cartes les plus tirées, chemin de vie, réglages. */
+/** Profil en trois onglets : tirages, toi, réglages. */
 export default async function Me() {
   const { user, profile } = await requireAccount();
   const db = createServiceClient();
-  const [{ data: drawn }, { count: convs }, arcana] = await Promise.all([
-    db.from("conversation_cards").select("card:cards(arcana, image_path), conversations!inner(user_id)").eq("conversations.user_id", user.id),
+  const [{ data: drawn }, { count: convs }, arcana, jar] = await Promise.all([
+    db
+      .from("conversation_cards")
+      .select("card:cards(arcana, image_path, decks(slug)), conversations!inner(user_id, created_at)")
+      .eq("conversations.user_id", user.id),
     db.from("conversations").select("id", { count: "exact", head: true }).eq("user_id", user.id),
     listArcana(),
+    cookies(),
   ]);
   const locale = profile.locale;
-
-  const tally = new Map<number, { count: number; image: string }>();
-  ((drawn ?? []) as unknown as { card: { arcana: number; image_path: string } }[]).forEach(({ card }) => {
-    const cur = tally.get(card.arcana);
-    tally.set(card.arcana, { count: (cur?.count ?? 0) + 1, image: cur?.image ?? `${card.image_path}-sm.webp` });
-  });
-  const top = [...tally.entries()]
-    .sort((a, b) => b[1].count - a[1].count)
-    .slice(0, 5)
-    .map(([n, v]) => ({ name: locale === "en" ? arcana[n].name_en : arcana[n].name_fr, image: v.image, count: v.count }));
+  const rows = (drawn ?? []) as unknown as { card: { arcana: number; image_path: string; decks: { slug: string } }; conversations: { created_at: string } }[];
+  const draws: Draw[] = rows.map(({ card, conversations }) => ({
+    arcana: card.arcana,
+    name: locale === "en" ? arcana[card.arcana].name_en : arcana[card.arcana].name_fr,
+    image: `${card.image_path}-sm.webp`,
+    href: `/decks/${card.decks.slug}/${card.arcana}`,
+    date: conversations.created_at,
+  }));
+  const theme = jar.get(THEME_COOKIE)?.value;
 
   return (
     <AppShell locale={locale} firstName={profile.first_name}>
@@ -37,9 +42,12 @@ export default async function Me() {
         birthdate={profile.birthdate ?? ""}
         notifyEmail={profile.notify_email}
         plan={effectivePlan(profile).id}
+        hasBilling={Boolean(profile.stripe_customer_id)}
         lifePath={lifePath(profile.birthdate)}
-        stats={{ cards: drawn?.length ?? 0, convs: convs ?? 0 }}
-        top={top}
+        world={profile.world ?? {}}
+        theme={isTheme(theme) ? theme : "light"}
+        stats={{ cards: rows.length, convs: convs ?? 0 }}
+        draws={draws}
       />
     </AppShell>
   );

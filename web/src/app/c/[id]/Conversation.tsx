@@ -54,6 +54,8 @@ export function Conversation({
   const [picker, setPicker] = useState(false);
   const [plans, setPlans] = useState(false);
   const [wall, setWall] = useState(false);
+  /** Inscription proposée sans bloquer, avant le mur du 3e message. */
+  const [keep, setKeep] = useState(false);
   const [anon, setAnon] = useState(isAnonymous);
   const [zoom, setZoom] = useState<Card | null>(null);
   const [offer, setOffer] = useState(false);
@@ -176,6 +178,7 @@ export function Conversation({
   function onSignedUp() {
     setAnon(false);
     setWall(false);
+    setKeep(false);
     setOffer(true);
   }
 
@@ -196,22 +199,25 @@ export function Conversation({
   return (
     <div className="flex h-dvh flex-col">
       {/* En-tête : retour, cartes du tirage en miniature, centrées, même hauteur. */}
-      <header className="relative flex items-center justify-center border-b border-rule/60 px-[10%] pb-3 pt-[max(env(safe-area-inset-top),14px)]">
+      <header className="hair-b relative flex items-center gap-3 px-[10%] pb-3 pt-[max(env(safe-area-inset-top),14px)]">
         {!anon && (
           <Link href="/journal" aria-label={t.conv.back} className="absolute left-4 top-[max(env(safe-area-inset-top),14px)] flex h-12 w-10 items-center text-[26px] text-ink/70">
             ‹
           </Link>
         )}
-        <div className="flex flex-col items-center">
-          <div className="flex gap-2">
-            {cards.map((c) => (
-              <button key={c.position} onClick={() => setZoom(c)} className="tarot h-12 w-8 shrink-0">
-                <img src={`${c.card.image_path}-sm.webp`} alt={name(c)?.name} className="h-full w-full object-cover" />
-              </button>
-            ))}
-          </div>
-          {cards.length === 1 && <p className="title mt-1.5 text-[14px]">{name(cards[0])?.name}</p>}
+        <div className="flex gap-2">
+          {cards.map((c) => (
+            <button key={c.position} onClick={() => setZoom(c)} className="tarot h-12 w-8 shrink-0">
+              <img src={`${c.card.image_path}-sm.webp`} alt={name(c)?.name} className="h-full w-full object-cover" />
+            </button>
+          ))}
         </div>
+        {cards.length === 1 && (
+          <div className="min-w-0">
+            <p className="title truncate text-[20px]">{`${name(cards[0])?.numeral} · ${name(cards[0])?.name}`}</p>
+            <p className="label mt-0.5 truncate text-ink-3">{cards[0].card.decks.name}</p>
+          </div>
+        )}
       </header>
 
       <main ref={scroller} className="no-scrollbar flex-1 overflow-y-auto px-[10%] pb-6 pt-6">
@@ -220,8 +226,8 @@ export function Conversation({
             const c = cards.find((k) => k.position === m.card_position);
             return (
               <div key={m.id} className="fade-up mb-8">
-                {c && cards.length > 1 && <p className="label mb-3 text-center text-ink-3">{`${name(c)?.numeral} · ${name(c)?.name}`}</p>}
-                <p className="display whitespace-pre-line text-center text-[20px] leading-relaxed" style={{ lineHeight: 1.45 }}>
+                {c && cards.length > 1 && <p className="label mb-3 text-ink-3">{`${name(c)?.numeral} · ${name(c)?.name}`}</p>}
+                <p className="display whitespace-pre-line text-[23px]" style={{ lineHeight: 1.25 }}>
                   {display(m.content)}
                 </p>
               </div>
@@ -229,17 +235,17 @@ export function Conversation({
           }
           if (m.role === "user") {
             return (
-              <div key={m.id} ref={m.id === lastUserId && !anchorOnReveal ? anchor : undefined} className="mb-6 flex scroll-mt-4 justify-end">
-                <p className="max-w-[min(85%,680px)] whitespace-pre-line bg-surface px-4 py-3 text-[16px] leading-relaxed" style={{ borderRadius: 4 }}>
-                  {m.content}
-                </p>
+              <div key={m.id} data-role="user" ref={m.id === lastUserId && !anchorOnReveal ? anchor : undefined} className="mb-6 ml-7 max-w-[680px] scroll-mt-4 border-l-[0.5px] border-ink-3 pl-4">
+                <p className="label mb-1 text-ink-3">{t.conv.youLabel}</p>
+                <p className="whitespace-pre-line text-[16px] leading-relaxed">{m.content}</p>
               </div>
             );
           }
           return (
-            <p key={m.id} className="mb-6 whitespace-pre-line text-[16px] leading-relaxed">
-              {display(m.content)}
-            </p>
+            <div key={m.id} data-role="assistant" className="mb-6 max-w-[680px]">
+              <p className="label mb-1 text-ink-3">{t.conv.cardLabel}</p>
+              <p className="whitespace-pre-line text-[16px] leading-relaxed">{display(m.content)}</p>
+            </div>
           );
         })}
 
@@ -247,11 +253,14 @@ export function Conversation({
           <div ref={anchorOnReveal ? anchor : undefined} className="mb-6 scroll-mt-4">
             {streaming.text !== "" &&
               (streaming.kind === "reveal" ? (
-                <p className="display whitespace-pre-line text-center text-[20px]" style={{ lineHeight: 1.45 }}>
+                <p className="display whitespace-pre-line text-[23px]" style={{ lineHeight: 1.25 }}>
                   {display(streaming.text)}
                 </p>
               ) : (
-                <p className="whitespace-pre-line text-[16px] leading-relaxed">{display(streaming.text)}</p>
+                <div className="max-w-[680px]">
+                  <p className="label mb-1 text-ink-3">{t.conv.cardLabel}</p>
+                  <p className="whitespace-pre-line text-[16px] leading-relaxed">{display(streaming.text)}</p>
+                </div>
               ))}
             {/* Le picto reste sous le texte, que la réponse pousse vers le bas. */}
             <div className="flex justify-center py-4">
@@ -282,7 +291,7 @@ export function Conversation({
 
       {/* Zone de saisie : sous une ligne, sans boîte ; flèche visible au premier caractère. */}
       {!wall && (
-        <footer className="border-t border-rule/60 bg-canvas px-[10%] pb-[max(env(safe-area-inset-bottom),14px)] pt-2">
+        <footer className="hair-t bg-canvas px-[10%] pb-[max(env(safe-area-inset-bottom),14px)] pt-2">
           <div className="flex items-end gap-3">
             <textarea
               value={input}
@@ -304,8 +313,17 @@ export function Conversation({
               </button>
             )}
           </div>
+          {/* Sans compte : rappel discret que l'échange sera perdu, dès la première lecture. */}
+          {anon && !streaming && messages.some((m) => m.role === "assistant") && (
+            <p className="pb-1 pt-1 text-[13px] text-ink-3">
+              {t.conv.notSaved}{" "}
+              <button onClick={() => setKeep(true)} className="btn-link text-[13px] text-ink-2">
+                {t.conv.keepIt}
+              </button>
+            </p>
+          )}
           {!anon && !suggestsCard && userCount >= 2 && !streaming && (
-            <button onClick={() => setPicker(true)} className="label pb-1 pt-1 text-ink/40">
+            <button onClick={() => setPicker(true)} className="btn-link pb-1 pt-1 text-ink-3">
               {t.conv.drawCard}
             </button>
           )}
@@ -336,6 +354,11 @@ export function Conversation({
         <SignupForm locale={locale} onDone={onSignedUp} />
       </Sheet>
 
+      <Sheet open={keep} onClose={() => setKeep(false)}>
+        {/* Monté seulement à l'ouverture : un seul formulaire d'inscription dans la page. */}
+        {keep && <SignupForm locale={locale} onDone={onSignedUp} title={t.wall.keepTitle} body={t.wall.keepBody} />}
+      </Sheet>
+
       <Sheet open={offer} onClose={closeOffer}>
         <div className="pb-4 text-center">
           <p className="display text-[30px]">{t.wall.offerTitle}</p>
@@ -351,8 +374,8 @@ export function Conversation({
           <div className="tarot aspect-[2/3] w-full max-w-[340px]">
             <img src={`${zoom.card.image_path}.webp`} alt={name(zoom)?.name} className="h-full w-full object-cover" />
           </div>
-          <p className="title mt-6 text-[22px]">{`${name(zoom)?.numeral} · ${name(zoom)?.name}`}</p>
-          <p className="mt-1 text-[13px] text-ink-3">{zoom.card.decks.name}</p>
+          <p className="display mt-6 text-[28px]">{`${name(zoom)?.numeral} · ${name(zoom)?.name}`}</p>
+          <p className="label mt-2 text-ink-3">{zoom.card.decks.name}</p>
         </div>
       )}
     </div>

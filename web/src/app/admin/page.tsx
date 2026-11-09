@@ -28,6 +28,11 @@ export default async function AdminHome() {
 
   const sections = [
     {
+      href: "/admin/mesure",
+      title: "mesure.",
+      body: "Le test marché : visiteurs (A), visiteurs qui tirent une carte (B), comptes créés (C), par source et jour par jour.",
+    },
+    {
       href: "/admin/decks",
       title: "decks et cartes.",
       body: `${published} deck${published > 1 ? "s" : ""} publié${published > 1 ? "s" : ""} sur ${decks.data?.length ?? 0}. Remplacer l'image d'une carte, modifier une description, créer un deck, choisir ce qui est ouvert aux offres gratuites.`,

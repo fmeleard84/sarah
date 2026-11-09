@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { startConversation } from "@/lib/conversation";
+import { track } from "@/lib/track";
 
 /** Ouvre une conversation : tire les cartes du tirage initial. */
 export async function POST(req: Request) {
@@ -12,5 +13,6 @@ export async function POST(req: Request) {
 
   const result = await startConversation(profile, spread, isAnonymous);
   if ("refused" in result) return NextResponse.json(result.refused, { status: 402 });
+  await track("draw", user.id);
   return NextResponse.json(result);
 }

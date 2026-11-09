@@ -8,10 +8,10 @@ export function Picto({ size = 40, animated = false }: { size?: number; animated
   return (
     <svg width={size * 0.78} height={size} viewBox="0 0 120 155" aria-hidden="true" className="overflow-visible">
       <g style={{ transformOrigin: "60px 78px", transform: "rotate(-6deg)", ...anim("picto-white") }}>
-        <rect x="8" y="6" width="96" height="140" rx="4" fill="#FEFCFA" stroke="#2C2825" strokeWidth="3" />
+        <rect x="8" y="6" width="96" height="140" rx="4" fill="var(--color-canvas)" stroke="var(--color-ink)" strokeWidth="3" />
       </g>
       <g style={{ transformOrigin: "60px 78px", transform: "rotate(8deg)", ...anim("picto-black") }}>
-        <rect x="16" y="8" width="96" height="140" rx="4" fill="#2C2825" />
+        <rect x="16" y="8" width="96" height="140" rx="4" fill="var(--color-ink)" />
       </g>
     </svg>
   );

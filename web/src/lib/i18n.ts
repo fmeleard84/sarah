@@ -2,10 +2,11 @@
  * Textes de l'interface, FR et EN.
  *
  * Règles de casse Morning Cards (verrouillées le 7 juillet) :
- * - Titres : Cormorant romain, sans majuscule, avec point.
- * - Titres émotionnels, discours direct : Cormorant italique, sans majuscule, sans point.
- * - Corps de marque : DM Sans, tout en minuscules, avec point.
- * - Corps fonctionnel : DM Sans, casse normale, avec point.
+ * - Titres : Instrument Serif romain, sans majuscule, avec point.
+ * - Titres émotionnels, discours direct : Instrument Serif, sans majuscule, sans point.
+ * - Corps de marque : Instrument Sans, tout en minuscules, avec point.
+ * - Corps fonctionnel : Instrument Sans, casse normale, avec point.
+ * - Boutons en casse de phrase ; les petites capitales restent aux légendes.
  * Jamais de tiret cadratin. Pas d'emoji. Le FR et l'EN sont des expressions
  * distinctes, pas des traductions mot à mot.
  */
@@ -29,6 +30,7 @@ const fr = {
   },
 
   home: {
+    myDeck: "Mon deck",
     hello: (name: string | null) => (name ? `bonjour, ${name.toLowerCase()}` : "bonjour"),
     rhythm: { 1: "un moment. une carte.", 3: "trois cartes. un fil.", 5: "cinq cartes. une traversée." } as Record<number, string>,
     spread: (n: number) => (n === 1 ? "1 carte" : `${n} cartes`),
@@ -42,6 +44,8 @@ const fr = {
   },
 
   conv: {
+    cardLabel: "La carte",
+    youLabel: "Toi",
     placeholder: "Écris ce qui te traverse…",
     drawCard: "Tirer une carte",
     pickCard: "choisis ta carte",
@@ -54,11 +58,13 @@ const fr = {
     history: "Voir mon journal",
     limit: "Cette conversation a atteint sa longueur maximale.",
     back: "Retour",
+    notSaved: "Cet échange n'est pas encore gardé.",
+    keepIt: "Le garder",
   },
 
   wall: {
     title: "crée ton compte pour continuer.",
-    body: "Ta conversation et ta carte seront sauvegardées.",
+    body: "Sans compte, cet échange sera perdu quand tu partiras. Crée un compte pour le garder.",
     firstName: "Prénom",
     email: "Email",
     password: "Mot de passe",
@@ -68,6 +74,8 @@ const fr = {
     cta: "Continuer",
     reassure: "Pas de carte bancaire · Désinscription à tout moment.",
     already: "Déjà un compte ? Se connecter",
+    keepTitle: "garde cet échange.",
+    keepBody: "Sans compte, il disparaît quand tu pars. Avec un compte, tu le retrouves dans ton journal, avec ta carte.",
     offerTitle: "ton offre exploration est activée",
     offerBody: "une carte par jour pendant 5 jours. gratuit.",
     offerCta: "Reprendre ma conversation",
@@ -97,6 +105,20 @@ const fr = {
   },
 
   decks: {
+    myDeck: "mon deck.",
+    myDeckLink: (n: number, total: number) => `Mon deck · ${n}/${total}`,
+    myDeckCount: (n: number, total: number) => `${n} carte${n > 1 ? "s" : ""} sur ${total}`,
+    myDeckHelp: "Compose ton deck : choisis une version de chaque arcane, dans tous les decks.",
+    pickVersion: "Choisis la version qui te parle.",
+    addToMine: "Ajouter à mon deck",
+    removeFromMine: "Retirer de mon deck",
+    toastAdded: "Ajoutée à ton deck.",
+    toastRemoved: "Retirée de ton deck.",
+    drawWithMine: "Tirer avec mon deck",
+    toastMine: "Tu tires avec ton deck à partir de maintenant.",
+    mineLocked: "Le tirage avec ton deck est disponible avec Ritual et Clarity.",
+    incomplete: (n: number) => `Complète ton deck pour tirer avec lui : il manque ${n} carte${n > 1 ? "s" : ""}.`,
+    columns: (n: number) => `Afficher sur ${n} colonnes`,
     title: "decks.",
     all: "Tous",
     favorites: "Favoris",
@@ -123,6 +145,19 @@ const fr = {
   },
 
   me: {
+    tabs: { drawings: "Tirages", you: "Toi", settings: "Réglages" },
+    ranges: { month: "Ce mois", year: "Cette année", all: "Tout" },
+    noDraw: "Rien sur cette période.",
+    seeMore: "Voir plus",
+    worldTitle: "ton monde.",
+    worldHelp: "Ce que tu écris ici aide l'IA à mieux te comprendre. Rien n'est obligatoire.",
+    world: { love: "Amour", work: "Travail", family: "Famille", health: "Santé", money: "Argent", growth: "Évolution personnelle" },
+    theme: "Apparence",
+    themes: { light: "Clair", dark: "Sombre", system: "Auto" },
+    password: "Changer mon mot de passe",
+    manageBilling: "Gérer mon abonnement",
+    support: "Aide",
+    contact: "Nous écrire",
     title: "toi.",
     stats: (cards: number, convs: number) => `${cards} carte${cards > 1 ? "s" : ""} tirée${cards > 1 ? "s" : ""} · ${convs} conversation${convs > 1 ? "s" : ""}`,
     mostDrawn: "tes cartes les plus tirées.",
@@ -139,6 +174,7 @@ const fr = {
   },
 
   plans: {
+    paid: "Merci, ton paiement est bien reçu.",
     title: "va plus loin.",
     sub: "Tu as atteint ta limite. Mais il y a plus à explorer.",
     current: "Ton offre",
@@ -146,6 +182,7 @@ const fr = {
     once: "une fois",
     choose: "Choisir",
     soon: "Le paiement ouvre très bientôt.",
+    failed: "Le paiement n'a pas pu s'ouvrir. Réessaie dans un instant.",
     continue: "Continuer sans",
     names: { exploration: "Exploration", intention: "Intention", ritual: "Ritual", clarity: "Clarity" },
     features: {
@@ -185,6 +222,7 @@ const en: Dict = {
   },
 
   home: {
+    myDeck: "My deck",
     hello: (name: string | null) => (name ? `hello, ${name.toLowerCase()}` : "hello"),
     rhythm: { 1: "one moment. one card.", 3: "three cards. one thread.", 5: "five cards. one crossing." },
     spread: (n: number) => (n === 1 ? "1 card" : `${n} cards`),
@@ -198,6 +236,8 @@ const en: Dict = {
   },
 
   conv: {
+    cardLabel: "The card",
+    youLabel: "You",
     placeholder: "Write what's on your mind…",
     drawCard: "Draw a card",
     pickCard: "choose your card",
@@ -210,11 +250,13 @@ const en: Dict = {
     history: "See my journal",
     limit: "This conversation has reached its maximum length.",
     back: "Back",
+    notSaved: "This conversation isn't saved yet.",
+    keepIt: "Keep it",
   },
 
   wall: {
     title: "create your account to keep going.",
-    body: "Your conversation and your card will be saved.",
+    body: "Without an account, this conversation is lost when you leave. Create one to keep it.",
     firstName: "First name",
     email: "Email",
     password: "Password",
@@ -224,6 +266,8 @@ const en: Dict = {
     cta: "Continue",
     reassure: "No credit card · Unsubscribe anytime.",
     already: "Already have an account? Sign in",
+    keepTitle: "keep this conversation.",
+    keepBody: "Without an account, it's gone when you leave. With one, it waits for you in your journal, card included.",
     offerTitle: "your exploration offer is on",
     offerBody: "one card a day for 5 days. free.",
     offerCta: "Back to my conversation",
@@ -253,6 +297,20 @@ const en: Dict = {
   },
 
   decks: {
+    myDeck: "my deck.",
+    myDeckLink: (n: number, total: number) => `My deck · ${n}/${total}`,
+    myDeckCount: (n: number, total: number) => `${n} card${n > 1 ? "s" : ""} of ${total}`,
+    myDeckHelp: "Build your deck: pick one version of each arcana, from every deck.",
+    pickVersion: "Pick the version that speaks to you.",
+    addToMine: "Add to my deck",
+    removeFromMine: "Remove from my deck",
+    toastAdded: "Added to your deck.",
+    toastRemoved: "Removed from your deck.",
+    drawWithMine: "Draw with my deck",
+    toastMine: "You're drawing with your deck from now on.",
+    mineLocked: "Drawing with your deck comes with Ritual and Clarity.",
+    incomplete: (n: number) => `Complete your deck before drawing with it: ${n} card${n > 1 ? "s" : ""} missing.`,
+    columns: (n: number) => `Show ${n} columns`,
     title: "decks.",
     all: "All",
     favorites: "Favorites",
@@ -279,6 +337,19 @@ const en: Dict = {
   },
 
   me: {
+    tabs: { drawings: "Draws", you: "You", settings: "Settings" },
+    ranges: { month: "This month", year: "This year", all: "All time" },
+    noDraw: "Nothing in this period.",
+    seeMore: "See more",
+    worldTitle: "your world.",
+    worldHelp: "What you write here helps the AI understand you better. None of it is required.",
+    world: { love: "Love", work: "Work", family: "Family", health: "Health", money: "Money", growth: "Personal growth" },
+    theme: "Appearance",
+    themes: { light: "Light", dark: "Dark", system: "Auto" },
+    password: "Change my password",
+    manageBilling: "Manage my subscription",
+    support: "Help",
+    contact: "Write to us",
     title: "you.",
     stats: (cards: number, convs: number) => `${cards} card${cards > 1 ? "s" : ""} drawn · ${convs} conversation${convs > 1 ? "s" : ""}`,
     mostDrawn: "your most drawn cards.",
@@ -295,6 +366,7 @@ const en: Dict = {
   },
 
   plans: {
+    paid: "Thank you, your payment went through.",
     title: "go further.",
     sub: "You've reached your limit. But there's more to explore.",
     current: "Your plan",
@@ -302,6 +374,7 @@ const en: Dict = {
     once: "one time",
     choose: "Choose",
     soon: "Payments open very soon.",
+    failed: "Payment couldn't open. Try again in a moment.",
     continue: "Continue without",
     names: { exploration: "Exploration", intention: "Intention", ritual: "Ritual", clarity: "Clarity" },
     features: {

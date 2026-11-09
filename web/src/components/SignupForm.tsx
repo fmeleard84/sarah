@@ -10,7 +10,7 @@ import { useDict } from "@/components/I18nProvider";
  * Pendant l'onboarding, le serveur convertit la session anonyme : la
  * conversation et le deck choisi sont conservés.
  */
-export function SignupForm({ locale, onDone }: { locale: Locale; onDone: () => void }) {
+export function SignupForm({ locale, onDone, title, body }: { locale: Locale; onDone: () => void; title?: string; body?: string }) {
   const t = useDict(locale);
   const [form, setForm] = useState({ firstName: "", email: "", password: "", birthdate: "", consent: false });
   const [show, setShow] = useState(false);
@@ -37,8 +37,8 @@ export function SignupForm({ locale, onDone }: { locale: Locale; onDone: () => v
 
   return (
     <form onSubmit={submit} className="pb-2">
-      <h2 className="title text-[28px]">{t.wall.title}</h2>
-      <p className="mt-2 text-[14px] text-ink-2">{t.wall.body}</p>
+      <h2 className="title text-[28px]">{title ?? t.wall.title}</h2>
+      <p className="mt-2 text-[14px] text-ink-2">{body ?? t.wall.body}</p>
 
       <div className="mt-6 space-y-2">
         <input className="field" placeholder={t.wall.firstName} value={form.firstName} onChange={set("firstName")} autoComplete="given-name" required />
@@ -66,7 +66,7 @@ export function SignupForm({ locale, onDone }: { locale: Locale; onDone: () => v
       </div>
 
       <label className="mt-5 flex items-start gap-3 text-[12px] leading-relaxed text-ink-2">
-        <input type="checkbox" checked={form.consent} onChange={set("consent")} required className="mt-0.5 accent-[#558BBB]" />
+        <input type="checkbox" checked={form.consent} onChange={set("consent")} required className="mt-0.5 accent-slate" />
         <span>{t.wall.consent}</span>
       </label>
 

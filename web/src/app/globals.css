@@ -1,9 +1,10 @@
 @import "tailwindcss";
 
 /*
- * Design system Morning Cards (brief landing du 23 juin + recette de juillet).
- * Papier chaud, serif italique éditorial, ardoise pour l'action, vieux rose
- * en accent rare, bronze réservé au cadre des cartes de tarot.
+ * Design system Morning Cards, identité Galerie (validée par Sarah le 4 novembre,
+ * avec le bleu d'origine et sans flèche sur les boutons).
+ * La carte est une œuvre : serif net, cartels de musée, filets fins. Ardoise pour
+ * l'action, vieux rose en accent rare, bronze réservé au cadre des cartes.
  * Boutons sans arrondi, blocs 4 px maximum. Pas de dégradé, pas d'emoji.
  */
 @theme {
@@ -11,7 +12,7 @@
   --color-surface: #faf3ef;
   --color-ink: #2c2825;
   --color-ink-2: #6b635d;
-  --color-ink-3: #a39a92;
+  --color-ink-3: #7a726b;
   --color-rule: #e5ddd4;
   --color-slate: #558bbb;
   --color-slate-hover: #4a7ba6;
@@ -19,8 +20,8 @@
   --color-rose: #c16780;
   --color-bronze: #957e45;
 
-  --font-serif: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
-  --font-sans: var(--font-dm-sans), "DM Sans", system-ui, sans-serif;
+  --font-serif: var(--font-instrument-serif), "Instrument Serif", Georgia, serif;
+  --font-sans: var(--font-instrument-sans), "Instrument Sans", system-ui, sans-serif;
 
   --ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
@@ -31,6 +32,7 @@ body {
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -42,13 +44,12 @@ body {
   background: var(--color-slate-soft);
 }
 
-/* Titre display : une fois par écran. */
+/* Titre display, une fois par écran : romain, l'italique reste au mot qui compte. */
 .display {
   font-family: var(--font-serif);
-  font-style: italic;
   font-weight: 400;
-  line-height: 1.05;
-  letter-spacing: -0.01em;
+  line-height: 1;
+  letter-spacing: -0.02em;
 }
 
 .title {
@@ -57,12 +58,20 @@ body {
   line-height: 1.1;
 }
 
-/* Libellé de bouton : majuscules espacées. */
+/* Cartel : les petites capitales ne servent qu'aux légendes, comme dans un musée. */
 .label {
-  font-size: 12px;
-  letter-spacing: 0.18em;
+  font-size: 11px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   font-weight: 500;
+}
+
+/* Filets : une seule épaisseur et une seule teinte partout. */
+.hair-b {
+  border-bottom: 0.5px solid var(--color-ink-3);
+}
+.hair-t {
+  border-top: 0.5px solid var(--color-ink-3);
 }
 
 .btn-primary {
@@ -73,6 +82,10 @@ body {
   color: var(--color-canvas);
   padding: 15px 32px;
   border-radius: 0;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
   transition: background 0.3s var(--ease-soft), transform 0.32s var(--ease-soft);
 }
 .btn-primary:hover {
@@ -86,6 +99,9 @@ body {
 }
 
 .btn-link {
+  font-size: 15px;
+  letter-spacing: 0;
+  text-transform: none;
   text-decoration: underline;
   text-underline-offset: 4px;
   text-decoration-thickness: 0.5px;
@@ -114,7 +130,7 @@ body {
 /* Carte de tarot : seul objet à porter le bronze. */
 .tarot {
   border: 1px solid var(--color-bronze);
-  border-radius: 6px;
+  border-radius: 2px;
   overflow: hidden;
   background: var(--color-surface);
   box-shadow:
@@ -217,4 +233,38 @@ body {
 }
 .admin-btn:disabled {
   opacity: 0.4;
+}
+
+/* Mode sombre : bleu marine très foncé. Clair par défaut, choisi dans le profil. */
+:root[data-theme="dark"] {
+  --color-canvas: #0d1727;
+  --color-surface: #16233a;
+  --color-ink: #f2eee8;
+  --color-ink-2: #c3c8d0;
+  --color-ink-3: #94a0b1;
+  --color-rule: #2c3a52;
+  --color-slate-soft: #2f4a66;
+  --color-rose: #dd93a8;
+  --color-bronze: #b89d5f;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] {
+    --color-canvas: #0d1727;
+    --color-surface: #16233a;
+    --color-ink: #f2eee8;
+    --color-ink-2: #c3c8d0;
+    --color-ink-3: #94a0b1;
+    --color-rule: #2c3a52;
+    --color-slate-soft: #2f4a66;
+    --color-rose: #dd93a8;
+    --color-bronze: #b89d5f;
+  }
+  :root[data-theme="system"] img[src^="/brand/wordmark"],
+  :root[data-theme="system"] img[src^="/brand/picto"] {
+    filter: invert(1) hue-rotate(180deg);
+  }
+}
+:root[data-theme="dark"] img[src^="/brand/wordmark"],
+:root[data-theme="dark"] img[src^="/brand/picto"] {
+  filter: invert(1) hue-rotate(180deg);
 }

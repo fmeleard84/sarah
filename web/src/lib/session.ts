@@ -20,6 +20,10 @@ export interface Profile {
   onboarded_at: string | null;
   notify_email: boolean;
   is_admin: boolean;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  use_my_deck: boolean;
+  world: Record<string, string>;
 }
 
 /** Langue : cookie, sinon navigateur, sinon français. */

@@ -61,9 +61,9 @@ function DrawIcon({ filled }: { filled: boolean }) {
 function DecksIcon({ filled }: { filled: boolean }) {
   return (
     <svg width="30" height="28" viewBox="0 0 26 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round">
-      <rect x="3.5" y="5" width="10" height="15" rx="1.5" fill="#2C2825" transform="rotate(-14 8.5 12.5)" />
-      <rect x="8" y="4" width="10" height="15.5" rx="1.5" fill="#2C2825" transform="rotate(-2 13 12)" />
-      <rect x="12.5" y="5" width="10" height="15" rx="1.5" fill={filled ? "currentColor" : "#2C2825"} transform="rotate(11 17.5 12.5)" />
+      <rect x="3.5" y="5" width="10" height="15" rx="1.5" fill="var(--color-ink)" transform="rotate(-14 8.5 12.5)" />
+      <rect x="8" y="4" width="10" height="15.5" rx="1.5" fill="var(--color-ink)" transform="rotate(-2 13 12)" />
+      <rect x="12.5" y="5" width="10" height="15" rx="1.5" fill={filled ? "currentColor" : "var(--color-ink)"} transform="rotate(11 17.5 12.5)" />
     </svg>
   );
 }

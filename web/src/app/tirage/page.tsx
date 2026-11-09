@@ -2,6 +2,8 @@ import { requireSession } from "@/lib/session";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { effectivePlan, explorationDaysLeft } from "@/lib/plans";
 import { quotaReached } from "@/lib/conversation";
+import { drawsWithMyDeck } from "@/lib/mydeck";
+import { getDict } from "@/lib/texts";
 import { AppShell } from "@/components/AppShell";
 import { HomeDraw } from "./HomeDraw";
 
@@ -12,12 +14,14 @@ export default async function DrawHome() {
   const { data: deck } = await createServiceClient().from("decks").select("name, slug").eq("id", profile.main_deck_id!).single();
   const plan = effectivePlan(profile);
   const quota = await quotaReached(profile, isAnonymous);
+  const mine = await drawsWithMyDeck(profile);
+  const t = await getDict(locale);
 
   const content = (
     <HomeDraw
       locale={locale}
       firstName={profile.first_name}
-      deckName={deck?.name ?? ""}
+      deckName={mine ? t.home.myDeck : (deck?.name ?? "")}
       spreads={plan.spreads}
       isAnonymous={isAnonymous}
       quota={quota}

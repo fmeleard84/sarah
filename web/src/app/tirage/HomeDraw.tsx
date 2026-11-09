@@ -10,7 +10,7 @@ import { PlansSheet } from "@/components/PlansSheet";
 
 interface DrawnCard {
   position: number;
-  card: { arcana: number; image_path: string };
+  card: { arcana: number; image_path: string; decks?: { name: string } };
 }
 
 const HOLD_MS = 1200;
@@ -164,14 +164,17 @@ export function HomeDraw({
         </Link>
       )}
 
-      <header className="pt-8 text-center">
-        <img src="/brand/wordmark.svg" alt="Morning Cards" className="mx-auto h-[10px] w-auto opacity-90" />
-        <h1 className="display mt-10 text-[36px]">{t.home.hello(firstName)}</h1>
-        <p className="mt-2 text-[15px] text-ink-2">{t.home.rhythm[spread]}</p>
+      <header className="pt-4">
+        <div className="flex items-center justify-between gap-4">
+          <img src="/brand/wordmark.svg" alt="Morning Cards" className="h-[10px] w-auto opacity-90" />
+          <p className="label text-ink-3">{deckName}</p>
+        </div>
+        <h1 className="display mt-6 text-[48px]">{t.home.hello(firstName)}</h1>
+        <p className="mt-2 text-[16px] text-ink-2">{t.home.rhythm[spread]}</p>
       </header>
 
       {!convId && (
-        <div className="mt-8 flex justify-center gap-6" role="tablist">
+        <div className="mt-6 flex gap-6" role="tablist">
           {([1, 3, 5] as const).map((n) => {
             const allowed = spreads.includes(n);
             return (
@@ -191,7 +194,7 @@ export function HomeDraw({
         </div>
       )}
 
-      <div className="relative mx-auto mt-10 w-[64%] max-w-[260px]">
+      <div className="relative mx-auto mt-7 w-[58%] max-w-[260px]">
         {/* Les cartes suivantes, décalées derrière comme le pictogramme. */}
         {Array.from({ length: Math.max(0, total - current - 1) })
           .slice(0, 4)
@@ -235,7 +238,7 @@ export function HomeDraw({
         </div>
       </div>
 
-      <div className="mt-8 min-h-[96px] text-center">
+      <div className="mt-6 min-h-[96px] text-center">
         {blocked ? (
           <div className="fade-up">
             <p className="title text-[22px]">{blocked.period === "week" ? t.plans.quotaReachedWeek : t.plans.quotaReached}</p>
@@ -254,14 +257,15 @@ export function HomeDraw({
           </div>
         ) : isRevealed && front ? (
           <div className="fade-up">
-            <p className="label text-ink-2">{names[front.arcana]}</p>
+            <p className="display text-[28px]">{names[front.arcana]}</p>
+            {front.decks?.name && <p className="label mt-2 text-ink-3">{front.decks.name}</p>}
             {current < cards.length - 1 ? (
-              <button onClick={next} className="display btn-link mt-4 text-[22px]">
+              <button onClick={next} className="btn-primary mt-5">
                 {t.home.next}
               </button>
             ) : (
               allRevealed && (
-                <button onClick={open} className="display btn-link mt-4 text-[22px]">
+                <button onClick={open} className="btn-primary mt-5">
                   {t.home.reveal}
                 </button>
               )
@@ -274,8 +278,6 @@ export function HomeDraw({
           </>
         )}
       </div>
-
-      <p className="mt-auto pt-6 text-center text-[12px] text-ink-3">{t.home.deck(deckName)}</p>
 
       <PlansSheet locale={locale} open={plansOpen} onClose={() => setPlansOpen(false)} />
     </div>

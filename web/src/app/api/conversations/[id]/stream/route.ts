@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { getLocale, getSession } from "@/lib/session";
-import { buildContext, canSendMessage, getConversation } from "@/lib/conversation";
+import { buildContext, getConversation } from "@/lib/conversation";
 import { ANONYMOUS_USER_MESSAGES, effectivePlan } from "@/lib/plans";
 import { cleanText, completeChat, streamChat, type ChatMessage } from "@/lib/llm";
 import { DRAW_CARD_TOKEN, SUMMARY_INSTRUCTION, revealInstruction } from "@/lib/prompt";
 import { createServiceClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
+
+const HISTORY_FOR_MODEL = 60;
 
 /**
  * Fait parler l'IA, en flux de texte brut.
@@ -69,25 +71,41 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     if (isAnonymous && userCount >= ANONYMOUS_USER_MESSAGES) {
       return NextResponse.json({ reason: "signup_required" }, { status: 402 });
     }
-    if (!canSendMessage(cards, userCount)) return NextResponse.json({ reason: "message_limit" }, { status: 402 });
 
     await db.from("messages").insert({ conversation_id: id, role: "user", content: text });
     history.push({ role: "user", content: text });
   }
 
+  // Pas de limite de messages, mais le modèle ne reçoit que la fin d'un long échange.
+  const recent = history.slice(-HISTORY_FOR_MODEL);
+
   const encoder = new TextEncoder();
+  let clientGone = false;
   const stream = new ReadableStream({
     async start(controller) {
+      // Si la personne quitte l'écran, on finit quand même : la réponse l'attendra au retour.
+      const push = (text: string) => {
+        if (clientGone) return;
+        try {
+          controller.enqueue(encoder.encode(text));
+        } catch {
+          clientGone = true;
+        }
+      };
+      const close = () => {
+        if (!clientGone) controller.close();
+      };
+
       let full = "";
       try {
-        for await (const delta of streamChat([{ role: "system", content: system }, ...history])) {
+        for await (const delta of streamChat([{ role: "system", content: system }, ...recent])) {
           full += delta;
-          controller.enqueue(encoder.encode(delta));
+          push(delta);
         }
       } catch (e) {
         console.error("[stream]", e);
-        controller.enqueue(encoder.encode("\n[[ERROR]]"));
-        controller.close();
+        push("\n[[ERROR]]");
+        close();
         return;
       }
 
@@ -96,13 +114,16 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
         await db.from("messages").insert({ conversation_id: id, role: "assistant", kind, card_position: cardPosition, content });
         await db.from("conversations").update({ updated_at: new Date().toISOString() }).eq("id", id);
       }
-      controller.close();
+      close();
 
       // Mémoire et titre du journal, hors du flux.
       const userCount = history.filter((m) => m.role === "user" && !m.content.startsWith("[")).length;
       if (kind === "text" && (userCount === 1 || userCount % 3 === 0)) {
         summarize(id, [...history, { role: "assistant", content }]).catch((e) => console.error("[summary]", e));
       }
+    },
+    cancel() {
+      clientGone = true;
     },
   });
 

@@ -4,6 +4,8 @@ import { requireAccount } from "@/lib/session";
 import { arcanaAcrossDecks, cardImage, deckCards, getDeck, listArcana } from "@/lib/decks";
 import { getDict } from "@/lib/texts";
 import { AppShell } from "@/components/AppShell";
+import { getMyDeck } from "@/lib/mydeck";
+import { MyDeckToggle } from "./MyDeckToggle";
 
 /**
  * Fiche carte : pleine largeur, ratio 2:3. Deux défilements horizontaux :
@@ -18,7 +20,7 @@ export default async function CardDetail({ params }: { params: Promise<{ slug: s
   if (!deck) notFound();
   const locale = profile.locale;
   const t = (await getDict(locale));
-  const [cards, arcana, across] = await Promise.all([deckCards(deck.id), listArcana(), arcanaAcrossDecks(n)]);
+  const [cards, arcana, across, mine] = await Promise.all([deckCards(deck.id), listArcana(), arcanaAcrossDecks(n), getMyDeck(profile.id)]);
   const card = cards.find((c) => c.arcana === n)!;
   const a = arcana[n];
   const nameOf = (k: number) => (locale === "en" ? arcana[k].name_en : arcana[k].name_fr);
@@ -31,11 +33,15 @@ export default async function CardDetail({ params }: { params: Promise<{ slug: s
       <div className="tarot mx-auto mt-2 aspect-[2/3] w-full max-w-[420px]">
         <img src={cardImage(card.image_path)} alt={nameOf(n)} className="h-full w-full object-cover" />
       </div>
-      <h1 className="title mt-6 text-[32px]">
-        <span className="text-ink-3">{a.numeral} · </span>
-        {nameOf(n).toLowerCase()}.
-      </h1>
-      <p className="mt-1 text-[13px] text-ink-3">{deck.name}</p>
+      <div className="mx-auto mt-6 max-w-[420px] border-l-[0.5px] border-ink-3 pl-4">
+        <p className="display text-[56px]">{a.numeral}</p>
+        <h1 className="title mt-1 text-[30px]">{nameOf(n)}</h1>
+        <p className="label mt-2 text-ink-3">{deck.name}</p>
+        {deck.artist && <p className="mt-1 text-[13px] text-ink-3">{t.decks.inspired(deck.artist)}</p>}
+      </div>
+      <div className="mx-auto mt-6 max-w-[420px]">
+        <MyDeckToggle locale={locale} cardId={card.id} arcana={n} pinned={mine.some((c) => c.card_id === card.id)} />
+      </div>
 
       <section className="mt-12">
         <h2 className="title text-[20px]">{t.decks.otherCards}</h2>

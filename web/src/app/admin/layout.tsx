@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/admin";
 import { Toaster } from "@/components/Toast";
+import { NoTrack } from "@/components/VisitTracker";
 import { AdminNav } from "./AdminNav";
 
 export const metadata: Metadata = { title: "Administration · Morning Cards" };
@@ -27,6 +28,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </header>
       <main className="pt-10">{children}</main>
       <Toaster />
+      <NoTrack />
     </div>
   );
 }

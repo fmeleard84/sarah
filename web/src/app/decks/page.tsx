@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { requireAccount } from "@/lib/session";
 import { cardImage, deckCards, listDecks } from "@/lib/decks";
+import { getMyDeck } from "@/lib/mydeck";
+import { MY_DECK_SIZE } from "@/lib/plans";
 import { getDict } from "@/lib/texts";
 import { AppShell } from "@/components/AppShell";
 import { Tick } from "@/components/Tick";
@@ -14,6 +16,7 @@ export default async function Library() {
   const { profile } = await requireAccount();
   const t = (await getDict(profile.locale));
   const decks = await listDecks();
+  const mine = await getMyDeck(profile.id);
 
   const items = await Promise.all(
     decks.map(async (d) => {
@@ -28,19 +31,24 @@ export default async function Library() {
     <AppShell locale={profile.locale} firstName={profile.first_name}>
       <header className="pt-6">
         <h1 className="display text-[44px]">{t.decks.title}</h1>
-        <p className="mt-1 text-[13px] text-ink-3">{t.decks.cards(decks.length * 22)}</p>
+        <div className="mt-2 flex items-baseline justify-between gap-4">
+          <p className="text-[13px] text-ink-3">{t.decks.cards(decks.length * 22)}</p>
+          <Link href="/decks/mon-deck" className="btn-link text-slate" style={{ fontSize: 14 }}>
+            {t.decks.myDeckLink(mine.length, MY_DECK_SIZE)}
+          </Link>
+        </div>
       </header>
 
       <div className="-mx-[6vw] mt-6 grid grid-cols-2 items-start gap-x-2 gap-y-4 md:mx-0 md:grid-cols-3 md:gap-x-4 lg:grid-cols-4">
             {items.map((d) => {
-              const active = d.id === profile.main_deck_id;
+              const active = !profile.use_my_deck && d.id === profile.main_deck_id;
               return (
                 <Link key={d.id} href={`/decks/${d.slug}`} className="group relative block">
                   <div className="tarot aspect-[2/3] transition-transform duration-300 group-hover:-translate-y-0.5 group-active:scale-[0.98]">
                     <img src={d.cover} alt={d.name} loading="lazy" className="h-full w-full object-cover" />
                   </div>
                   {active ? (
-                    <span className="absolute left-2.5 top-2.5 text-canvas drop-shadow" aria-label={t.decks.active}>
+                    <span className="absolute left-2.5 top-2.5 flex h-6 w-6 items-center justify-center bg-canvas text-ink" aria-label={t.decks.active}>
                       <Tick />
                     </span>
                   ) : (

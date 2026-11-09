@@ -1,7 +1,8 @@
 import "server-only";
 import { createServiceClient } from "@/lib/supabase/admin";
 import type { Profile } from "@/lib/session";
-import { MESSAGES_PER_CARD, effectivePlan, periodStart, type Plan } from "@/lib/plans";
+import { effectivePlan, periodStart, type Plan } from "@/lib/plans";
+import { drawsWithMyDeck, getMyDeck } from "@/lib/mydeck";
 import { buildSystemPrompt, type PromptCard, type Summary } from "@/lib/prompt";
 import type { ChatMessage } from "@/lib/llm";
 
@@ -10,8 +11,7 @@ export type Refusal =
   | { reason: "spread" }
   | { reason: "card_limit" }
   | { reason: "deck_locked" }
-  | { reason: "signup_required" }
-  | { reason: "message_limit" };
+  | { reason: "signup_required" };
 
 export interface ConvCard {
   position: number;
@@ -59,17 +59,26 @@ export async function startConversation(profile: Profile, spreadSize: 1 | 3 | 5,
     if (used >= (isAnonymous ? 1 : plan.conversations)) return { refused: { reason: "quota", period: plan.period } as Refusal };
   }
 
-  const { data: deck } = await db().from("decks").select("id, is_open").eq("id", profile.main_deck_id!).single();
-  if (!deck) throw new Error("deck introuvable");
-  if (!deck.is_open && !plan.allDecks) return { refused: { reason: "deck_locked" } as Refusal };
-
   const arcana = pickArcana(spreadSize, []);
-  const { data: cards } = await db().from("cards").select("id, arcana").eq("deck_id", deck.id).in("arcana", arcana);
-  const byArcana = new Map((cards ?? []).map((c) => [c.arcana, c.id]));
+  const fromMyDeck = await drawsWithMyDeck(profile);
+  let deckId: string | null = null;
+  let byArcana: Map<number, string>;
 
+  if (fromMyDeck) {
+    byArcana = new Map((await getMyDeck(profile.id)).map((c) => [c.arcana, c.card_id]));
+  } else {
+    const { data: deck } = await db().from("decks").select("id, is_open").eq("id", profile.main_deck_id!).single();
+    if (!deck) throw new Error("deck introuvable");
+    if (!deck.is_open && !plan.allDecks) return { refused: { reason: "deck_locked" } as Refusal };
+    deckId = deck.id;
+    const { data: cards } = await db().from("cards").select("id, arcana").eq("deck_id", deck.id).in("arcana", arcana);
+    byArcana = new Map((cards ?? []).map((c) => [c.arcana, c.id]));
+  }
+
+  // deck_id vide : tirage avec My Deck, chaque carte porte son propre deck.
   const { data: conv, error } = await db()
     .from("conversations")
-    .insert({ user_id: profile.id, deck_id: deck.id, spread_size: spreadSize })
+    .insert({ user_id: profile.id, deck_id: deckId, spread_size: spreadSize })
     .select("id")
     .single();
   if (error) throw error;
@@ -93,11 +102,19 @@ export async function drawExtraCard(profile: Profile, conversationId: string, is
 
   const { data: conv } = await db().from("conversations").select("deck_id").eq("id", conversationId).single();
   const [arcana] = pickArcana(1, cards.map((c) => c.card.arcana));
-  const { data: card } = await db().from("cards").select("id").eq("deck_id", conv!.deck_id).eq("arcana", arcana).single();
+  let cardId: string;
+  if (conv!.deck_id) {
+    const { data: card } = await db().from("cards").select("id").eq("deck_id", conv!.deck_id).eq("arcana", arcana).single();
+    cardId = card!.id;
+  } else {
+    const mine = (await getMyDeck(profile.id)).find((c) => c.arcana === arcana);
+    if (!mine) return { refused: { reason: "card_limit" } as Refusal };
+    cardId = mine.card_id;
+  }
 
   await db()
     .from("conversation_cards")
-    .insert({ conversation_id: conversationId, position: cards.length, card_id: card!.id, is_extra: true });
+    .insert({ conversation_id: conversationId, position: cards.length, card_id: cardId, is_extra: true });
 
   if (!withinPlan) {
     await db().from("profiles").update({ extra_cards: profile.extra_cards - 1 }).eq("id", profile.id);
@@ -126,10 +143,6 @@ export async function getMessages(id: string) {
     .eq("conversation_id", id)
     .order("created_at");
   return (data ?? []) as { id: string; role: "user" | "assistant"; kind: "text" | "reveal"; card_position: number | null; content: string; created_at: string }[];
-}
-
-export function canSendMessage(cards: ConvCard[], userMessages: number) {
-  return userMessages < cards.length * MESSAGES_PER_CARD;
 }
 
 /** Contexte complet pour le modèle : prompt système + historique. */
@@ -170,6 +183,7 @@ export async function buildContext(profile: Profile, conversationId: string, pla
 
   const system = buildSystemPrompt({
     firstName: profile.first_name,
+    world: profile.world,
     locale,
     now: new Date(),
     spreadSize: cards.filter((c) => !c.is_extra).length,

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { sendWelcomeEmail } from "@/lib/email";
+import { track } from "@/lib/track";
 
 /**
  * Création de compte.
@@ -69,6 +70,7 @@ export async function POST(req: Request) {
     })
     .eq("id", userId);
 
+  await track("signup", userId);
   sendWelcomeEmail(email, firstName, locale).catch((e) => console.error("[welcome]", e));
   return NextResponse.json({ ok: true });
 }

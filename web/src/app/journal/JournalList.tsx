@@ -81,7 +81,7 @@ export function JournalList({ locale, entries: initial }: { locale: Locale; entr
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[12px] text-ink-3">{fmt.format(new Date(e.createdAt))}</p>
-                  <p className="title mt-0.5 line-clamp-2 text-[18px]">{e.title ?? t.untitled}</p>
+                  <p className="title mt-0.5 line-clamp-2 text-[19px]">{e.title ?? t.untitled}</p>
                   <p className="mt-0.5 truncate text-[12px] text-ink-2">
                     {e.names.slice(0, 2).join(" · ")}
                     {e.names.length > 2 ? ` ·+${e.names.length - 2}` : ""}
@@ -89,7 +89,7 @@ export function JournalList({ locale, entries: initial }: { locale: Locale; entr
                 </div>
               </Link>
               <button onClick={() => toggle(e)} aria-label={t.favorites} aria-pressed={e.favorite} className="p-2">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill={e.favorite ? "#C16780" : "none"} stroke={e.favorite ? "#C16780" : "#A39A92"} strokeWidth="1.5">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill={e.favorite ? "var(--color-rose)" : "none"} stroke={e.favorite ? "var(--color-rose)" : "var(--color-ink-3)"} strokeWidth="1.5">
                   <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" strokeLinejoin="round" />
                 </svg>
               </button>

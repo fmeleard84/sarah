@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 /**
- * Toast (spécification du 8 juillet) : fond encre, texte papier, DM Sans 13 px,
+ * Toast (spécification du 8 juillet) : fond encre, texte papier, 13 px,
  * sans icône, sans arrondi, au-dessus de la pill, 2,5 s.
  * Déclenché de n'importe où par toast("…").
  */

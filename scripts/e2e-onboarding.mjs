@@ -25,6 +25,8 @@ const PICTO = "main svg g[style*='picto']";
 
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ ...devices["iPhone 13"], locale: "fr-FR" });
+// La recette ne compte pas dans la mesure A/B/C (voir web/src/lib/track.ts).
+if (!process.env.E2E_TRACK) await ctx.addCookies([{ name: "mc_notrack", value: "1", url: BASE }]);
 const page = await ctx.newPage();
 page.on("pageerror", (e) => console.log("  [pageerror]", e.message));
 
@@ -82,7 +84,7 @@ for (const [i, msg] of [LONG, "Oui, j'ai peur de quitter ce que je connais."].en
     .waitForFunction(
       (s) => {
         const g = document.querySelector(s);
-        const p = g?.closest("div.mb-6")?.querySelector("p");
+        const p = [...(g?.closest("div.mb-6")?.querySelectorAll("p") ?? [])].pop();
         return Boolean(g && p && p.textContent.length > 20 && p.getBoundingClientRect().bottom <= g.getBoundingClientRect().top + 1);
       },
       PICTO,
@@ -97,7 +99,7 @@ for (const [i, msg] of [LONG, "Oui, j'ai peur de quitter ce que je connais."].en
   await page.waitForTimeout(1500);
   const pos = await page.evaluate(() => {
     const main = document.querySelector("main");
-    const mine = [...main.querySelectorAll("div.justify-end")].pop();
+    const mine = [...main.querySelectorAll("[data-role=user]")].pop();
     return { scrollTop: main.scrollTop, offset: mine.getBoundingClientRect().top - main.getBoundingClientRect().top };
   });
   check(Math.abs(pos.scrollTop - during) <= 2, `pas de saut à la fin de la réponse (${during} puis ${pos.scrollTop})`);
@@ -127,7 +129,7 @@ await page.waitForSelector("text=ton offre exploration est activée", { timeout:
 await shot(page, "09-offre");
 await page.getByRole("button", { name: /reprendre ma conversation/i }).click();
 await page.waitForFunction(
-  () => [...document.querySelectorAll("main > p")].length >= 2 && !document.querySelector("main svg g[style*='picto']") && !/Réessayer/i.test(document.querySelector("main").innerText),
+  () => document.querySelectorAll("[data-role=assistant]").length >= 3 && !document.querySelector("main svg g[style*='picto']") && !/Réessayer/i.test(document.querySelector("main").innerText),
   null,
   { timeout: 120000, polling: 500 },
 ).catch(() => {});
@@ -151,8 +153,8 @@ await page.waitForTimeout(600);
 await shot(page, "12-paywall");
 await page.locator('[role=dialog] button:has-text("Choisir")').first().click();
 await page.waitForTimeout(600);
-const notice = page.locator("[role=dialog] p[role=status]").filter({ hasText: /bientôt/ });
-check(await notice.count() === 1 && await notice.evaluate((e) => { const r = e.getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; }), "message « paiement bientôt » visible à l'écran");
+const notice = page.locator("[role=dialog] p[role=status]").filter({ hasText: /bientôt|n'a pas pu/ });
+check(await notice.count() === 1 && await notice.evaluate((e) => { const r = e.getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; }), "message du paiement visible à l'écran");
 await shot(page, "12-paywall-bientot");
 
 step("journal, decks, profil");
@@ -182,10 +184,11 @@ check(order.join() === "/tirage,/journal,/decks,/moi", `ordre du menu : ${order.
 const label = await page.locator("a .tarot").first().locator("xpath=../p").evaluate((e) => getComputedStyle(e).fontSize);
 check(label === "12px", `nom du deck discret (${label})`);
 await page.goto(BASE + "/moi");
+await page.getByRole("tab", { name: "Réglages" }).click();
 const a = await page.getByRole("button", { name: /voir les offres/i }).boundingBox();
 const planName = await page.locator("section p.title").last().boundingBox();
 check(Math.abs(a.y + a.height / 2 - (planName.y + planName.height / 2)) < 14, "« Voir les offres » aligné avec le nom de l'offre");
-await shot(page, "21-moi-offre");
+await shot(page, "21-moi-reglages");
 
 await browser.close();
 console.log(`compte de test ${email}, captures dans ${OUT}`);

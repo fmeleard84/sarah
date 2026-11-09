@@ -2,11 +2,16 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_ANON_KEY, SUPABASE_COOKIE_NAME, SUPABASE_SERVER_URL } from "@/lib/supabase/config";
 
+const VISITOR_COOKIE = "mc_vid";
+
 /**
  * Proxy (ex-middleware, Next 16) : rafraîchit la session à chaque requête.
  * Les gardes d'accès sont dans les pages (requireSession / requireAccount).
+ * Pose aussi l'identifiant de visiteur de la mesure (voir lib/track.ts).
  */
 export async function proxy(request: NextRequest) {
+  const newVisitor = request.cookies.get(VISITOR_COOKIE) ? null : crypto.randomUUID();
+  if (newVisitor) request.cookies.set(VISITOR_COOKIE, newVisitor);
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(SUPABASE_SERVER_URL, SUPABASE_ANON_KEY, {
@@ -21,10 +26,13 @@ export async function proxy(request: NextRequest) {
     },
   });
   await supabase.auth.getUser();
+  if (newVisitor) {
+    response.cookies.set(VISITOR_COOKIE, newVisitor, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax", httpOnly: true, secure: request.nextUrl.protocol === "https:" });
+  }
   return response;
 }
 
 export const config = {
   // Ni l'API Supabase réécrite, ni les fichiers statiques.
-  matcher: ["/((?!sb/|api/admin/cards|_next/static|_next/image|decks/|brand/|favicon|api/health|api/client-error).*)"],
+  matcher: ["/((?!sb/|api/admin/cards|_next/static|_next/image|decks/|brand/|favicon|api/health|api/client-error|api/stripe/webhook).*)"],
 };

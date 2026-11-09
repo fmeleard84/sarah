@@ -5,7 +5,7 @@
  * - Exploration dure 5 jours (landing du 3 juillet), puis bascule en Intention.
  * - Une carte supplémentaire dans une conversation consomme d'abord un crédit
  *   acheté (pack), sinon elle doit tenir dans le quota de l'offre.
- * - Garde-fou : 50 messages par carte tirée dans une conversation.
+ * - Pas de limite de messages : le LLM tourne sur nos serveurs (décision du 5 novembre).
  */
 
 export type PlanId = "exploration" | "intention" | "ritual" | "clarity";
@@ -49,7 +49,8 @@ export const PACKS = [
   { id: "single", cards: 1, priceEur: 3 },
 ] as const;
 
-export const MESSAGES_PER_CARD = 50;
+/** Un deck personnalisé complet : une version de chacun des 22 arcanes. */
+export const MY_DECK_SIZE = 22;
 
 /** Messages accordés à une session anonyme avant le mur d'inscription. */
 export const ANONYMOUS_USER_MESSAGES = 2;

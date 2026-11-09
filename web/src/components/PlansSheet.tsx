@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { type Locale } from "@/lib/i18n";
 import { useDict } from "@/components/I18nProvider";
@@ -8,7 +9,7 @@ import { Sheet } from "@/components/Sheet";
 
 /**
  * Paywall : Ritual mis en avant, puis Clarity, puis les cartes à l'unité.
- * Le paiement n'est pas encore branché : « Choisir » annonce l'ouverture.
+ * « Choisir » ouvre la page de paiement Stripe ; sans clé Stripe, annonce l'ouverture.
  */
 export function PlansSheet({ locale, open, onClose, current }: { locale: Locale; open: boolean; onClose: () => void; current?: string }) {
   return (
@@ -20,11 +21,16 @@ export function PlansSheet({ locale, open, onClose, current }: { locale: Locale;
 
 export function PlansContent({ locale, onClose, current }: { locale: Locale; onClose?: () => void; current?: string }) {
   const t = useDict(locale).plans;
+  const router = useRouter();
   const [notice, setNotice] = useState<string | null>(null);
 
   async function choose(item: string) {
     const res = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ item }) });
-    if (res.status === 501) setNotice(t.soon);
+    if (res.status === 501) return setNotice(t.soon);
+    if (res.status === 401) return router.push("/inscription");
+    const { url } = await res.json().catch(() => ({ url: null }));
+    if (url) window.location.href = url;
+    else setNotice(t.failed);
   }
 
   const paid = [PLANS.ritual, PLANS.clarity];

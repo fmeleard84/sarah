@@ -6,6 +6,8 @@
  * pas de Markdown (des astérisques restaient affichées), pas de salutation.
  * Retour de Sarah du 4 novembre : pas de mention du deck à l'ouverture, seulement
  * quand c'est pertinent ensuite.
+ * Décision du 5 novembre : l'IA ne ferme jamais, mais une relance sur un nouveau
+ * sujet, après une conclusion, appelle une nouvelle carte.
  */
 
 export interface PromptCard {
@@ -33,8 +35,11 @@ export interface Summary {
 
 export const DRAW_CARD_TOKEN = "[[DRAW_CARD]]";
 
+const WORLD_LABELS: Record<string, string> = { love: "Amour", work: "Travail", family: "Famille", health: "Santé", money: "Argent", growth: "Évolution personnelle" };
+
 export function buildSystemPrompt(opts: {
   firstName: string | null;
+  world?: Record<string, string> | null;
   locale: "fr" | "en";
   now: Date;
   spreadSize: number;
@@ -69,6 +74,11 @@ export function buildSystemPrompt(opts: {
         })
         .join("\n")
     : "Aucune conversation précédente.";
+
+  const worldBlock = Object.entries(opts.world ?? {})
+    .filter(([, v]) => v?.trim())
+    .map(([k, v]) => `- ${WORLD_LABELS[k] ?? k} : ${v.trim()}`)
+    .join("\n");
 
   const spreadRule =
     opts.spreadSize === 3
@@ -116,12 +126,21 @@ Quand une nouvelle carte est tirée, donne-lui d'abord sa propre lecture, puis t
 
 RÈGLE 5 — Clôture
 Tu ne fermes jamais la conversation. Quand un insight important émerge, honore-le. Si un fil reste ouvert, nomme-le sobrement et demande si la personne veut aller là. Ne résume pas la session comme si elle était terminée.
+${
+  opts.canSuggestCard
+    ? `Si la conversation a trouvé une forme de conclusion satisfaisante et que la personne relance ensuite sur un nouveau sujet, accueille-le en une phrase et invite-la à tirer une nouvelle carte pour l'éclairer, sans le traiter en profondeur avec la carte en cours. Termine alors ton message par ${DRAW_CARD_TOKEN} sur sa propre ligne. Si elle préfère continuer sans tirer, continue avec elle.`
+    : ""
+}
 
 MÉMOIRE
 Conversations précédentes de la personne (à évoquer seulement si c'est pertinent, avec discrétion) :
 ${memoryBlock}
 
-CARTES DE CETTE CONVERSATION
+${worldBlock ? `CE QUE LA PERSONNE A CHOISI DE PARTAGER
+À garder en tête et à évoquer seulement si c'est pertinent, avec discrétion :
+${worldBlock}
+
+` : ""}CARTES DE CETTE CONVERSATION
 ${cardsBlock}
 
 CONTRAINTES D'ÉCRITURE

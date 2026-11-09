@@ -26,15 +26,15 @@ export default async function DeckDetail({ params }: { params: Promise<{ slug: s
       </Link>
       <header className="mt-2">
         <h1 className="display text-[44px]">{deck.name.toLowerCase()}</h1>
-        {deck.artist && <p className="mt-1 text-[13px] italic text-ink-3">{t.decks.inspired(deck.artist)}</p>}
-        <p className="display mt-5 text-[17px] text-ink/70" style={{ lineHeight: 1.5 }}>
+        {deck.artist && <p className="label mt-2 text-ink-3">{t.decks.inspired(deck.artist)}</p>}
+        <p className="mt-5 text-[16px] text-ink-2" style={{ lineHeight: 1.55 }}>
           {deckDescription(deck, locale)}
         </p>
         <p className="mt-4 text-[12px] text-ink-3">{[...deck.styles, ...deck.moods].join(" · ")}</p>
       </header>
 
       <div className="mt-8">
-        <UseDeckButton locale={locale} slug={deck.slug} name={deck.name} active={deck.id === profile.main_deck_id} locked={locked} />
+        <UseDeckButton locale={locale} slug={deck.slug} name={deck.name} active={!profile.use_my_deck && deck.id === profile.main_deck_id} locked={locked} />
       </div>
 
       <ul className="mt-10 grid grid-cols-2 gap-x-4 md:grid-cols-4 lg:grid-cols-6 gap-y-6">
