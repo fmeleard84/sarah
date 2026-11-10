@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { type Locale } from "@/lib/i18n";
+import { archMix } from "@/lib/arch";
 import { useDict } from "@/components/I18nProvider";
 import { ANONYMOUS_USER_MESSAGES } from "@/lib/plans";
 import { Picto } from "@/components/Picto";
@@ -16,7 +17,7 @@ const DRAW_TOKEN = "[[DRAW_CARD]]";
 interface Card {
   position: number;
   is_extra: boolean;
-  card: { id: string; arcana: number; image_path: string; decks: { name: string } };
+  card: { id: string; arcana: number; image_path: string; arch_color: string | null; arch_intensity: number; decks: { name: string } };
 }
 interface Message {
   id: string;
@@ -24,6 +25,14 @@ interface Message {
   kind: "text" | "reveal";
   card_position: number | null;
   content: string;
+}
+
+const noSubscribe = () => () => {};
+function periodOf(iso: string) {
+  const created = new Date(iso);
+  if (created.toDateString() !== new Date().toDateString()) return null;
+  const h = created.getHours();
+  return h < 12 ? "morning" : h < 18 ? "afternoon" : "evening";
 }
 
 /** Retire les jetons techniques et les tirets cadratins pendant l'affichage. */
@@ -36,6 +45,8 @@ export function Conversation({
   initialCards,
   initialMessages,
   names,
+  myDeck,
+  createdAt,
 }: {
   id: string;
   locale: Locale;
@@ -43,6 +54,8 @@ export function Conversation({
   initialCards: Card[];
   initialMessages: Message[];
   names: Record<number, { numeral: string; name: string }>;
+  myDeck: boolean;
+  createdAt: string;
 }) {
   const t = useDict(locale);
   const router = useRouter();
@@ -51,7 +64,11 @@ export function Conversation({
   const [streaming, setStreaming] = useState<null | { kind: "text" | "reveal"; position: number | null; text: string }>(null);
   const [input, setInput] = useState("");
   const [error, setError] = useState(false);
-  const [picker, setPicker] = useState(false);
+  /** En-tête replié dès que la conversation défile (specs du 9 novembre). */
+  const [compact, setCompact] = useState(false);
+  /** Cartes tirées pendant cette visite : seules elles jouent l'apparition. */
+  const [fresh, setFresh] = useState<number[]>([]);
+  const [drawing, setDrawing] = useState(false);
   const [plans, setPlans] = useState(false);
   const [wall, setWall] = useState(false);
   /** Inscription proposée sans bloquer, avant le mur du 3e message. */
@@ -75,6 +92,13 @@ export function Conversation({
   useEffect(() => {
     if (scroller.current) scroller.current.scrollTop = scroller.current.scrollHeight;
   }, []);
+
+  // L'en-tête se replie au-delà de 60 px de défilement et redevient grand tout en haut.
+  function onScroll(e: React.UIEvent<HTMLElement>) {
+    const top = e.currentTarget.scrollTop;
+    if (top > 60 && !compact) setCompact(true);
+    else if (top < 8 && compact) setCompact(false);
+  }
 
   // Lecture ancrée : le message envoyé (ou la carte ajoutée) monte en haut de l'écran,
   // la réponse s'écrit dessous et rien ne bouge ensuite. La personne descend à son
@@ -162,17 +186,24 @@ export function Conversation({
   }
 
   async function drawCard() {
-    setPicker(false);
-    const res = await fetch(`/api/conversations/${id}/cards`, { method: "POST" });
-    if (res.status === 402) {
-      const r = await res.json();
-      if (r.reason === "signup_required") setWall(true);
-      else setPlans(true);
-      return;
+    if (drawing || busy.current) return;
+    setDrawing(true);
+    try {
+      const res = await fetch(`/api/conversations/${id}/cards`, { method: "POST" });
+      if (res.status === 402) {
+        const r = await res.json();
+        if (r.reason === "signup_required") setWall(true);
+        else setPlans(true);
+        return;
+      }
+      if (!res.ok) return setError(true);
+      const state = await fetch(`/api/conversations/${id}`).then((r) => r.json());
+      const known = new Set(cards.map((c) => c.position));
+      setFresh((f) => [...f, ...(state.cards as Card[]).filter((c) => !known.has(c.position)).map((c) => c.position)]);
+      setCards(state.cards);
+    } finally {
+      setDrawing(false);
     }
-    if (!res.ok) return setError(true);
-    const state = await fetch(`/api/conversations/${id}`).then((r) => r.json());
-    setCards(state.cards);
   }
 
   function onSignedUp(plan: "early" | "exploration") {
@@ -196,157 +227,236 @@ export function Conversation({
   const lastUserId = [...messages].reverse().find((m) => m.role === "user")?.id;
   const anchorOnReveal = streaming?.kind === "reveal" && streaming.position !== null && cards[streaming.position]?.is_extra;
 
+  // En-tête « colophon » : teinte de la première carte, gardée toute la conversation ;
+  // pile des trois dernières vignettes, nom de la dernière carte.
+  const first = cards[0];
+  const last = cards[cards.length - 1];
+  const tint = first ? archMix(first.card.arch_color, first.card.arch_intensity) : "var(--color-arch-idle)";
+  const pile = cards.slice(-3);
+  const layouts: Record<number, [number, number][]> = { 1: [[26, 0]], 2: [[14, -7], [38, 4]], 3: [[4, -9], [26, -1], [48, 7]] };
+  const layoutsSmall: Record<number, [number, number][]> = { 1: [[10, 0]], 2: [[4, -7], [16, 4]], 3: [[0, -9], [10, -1], [20, 7]] };
+  const deckLine = (c: Card) => (myDeck ? t.conv.myDeck : t.conv.deckLine(c.card.decks.name));
+  // « ce matin », « ce soir » : à l'heure de la personne, donc calculé dans le navigateur seulement.
+  const period = useSyncExternalStore(noSubscribe, () => periodOf(createdAt), () => null);
+  const metaTail = cards.length > 1 ? t.conv.cardsLine(cards.length, period) : last ? deckLine(last) : "";
+  const meta = (c: Card | undefined, tail: string) =>
+    c ? (
+      <>
+        Nº <b className="tabnum">{c.card.arcana}</b>
+        {tail ? ` · ${tail}` : ""}
+      </>
+    ) : null;
+
+  const reveals = new Set(messages.filter((m) => m.kind === "reveal").map((m) => m.card_position));
+  /** Planche hors texte : la carte supplémentaire dans le fil, entre deux filets. */
+  const plate = (c: Card, anchored = false) => {
+    const animate = fresh.includes(c.position);
+    return (
+      <figure
+        key={`plate-${c.position}`}
+        ref={anchored ? anchor : undefined}
+        className="hair-t hair-b mt-[34px] flex scroll-mt-[90px] flex-col items-center pb-[22px] pt-[26px]"
+      >
+        <button
+          onClick={() => setZoom(c)}
+          className={`${animate ? "mc-develop " : ""}h-[199px] w-[132px] overflow-hidden rounded-[4px] border border-bronze shadow-[0_1px_2px_rgba(60,40,20,0.1),0_16px_28px_-14px_rgba(60,40,20,0.4)]`}
+        >
+          <img src={`${c.card.image_path}.webp`} alt={name(c)?.name} className="h-full w-full object-cover" />
+        </button>
+        <figcaption className={`${animate ? "mc-in " : ""}mt-[14px] flex flex-col items-center gap-[5px]`}>
+          <span className="arcana text-[20px]">{name(c)?.name}</span>
+          <span className="meta">{meta(c, myDeck ? t.conv.myDeck : t.conv.deckLine(c.card.decks.name))}</span>
+        </figcaption>
+      </figure>
+    );
+  };
+  const revealText = (text: string, extra: boolean, animate: boolean) => (
+    <p data-role="reveal" className={`${extra ? "mt-[22px]" : ""} ${animate ? "mc-in2" : "fade-up"} whitespace-pre-line font-serif text-[20px] italic leading-7`}>{display(text)}</p>
+  );
+  const busyNow = Boolean(streaming) || drawing;
+
   return (
-    <div className="flex h-dvh flex-col">
-      {/* En-tête : retour, cartes du tirage en miniature, centrées, même hauteur. */}
-      <header className="hair-b relative flex items-center gap-3 px-[10%] pb-3 pt-[max(env(safe-area-inset-top),14px)]">
+    <div className="relative flex h-dvh flex-col">
+      {/* En-tête fixe, la conversation défile dessous. */}
+      <header
+        className="absolute inset-x-0 top-0 z-20 shadow-[0_10px_18px_-16px_rgba(60,40,20,0.35)] transition-[border-radius] duration-300"
+        style={{ background: tint, borderRadius: compact ? "0 0 120px 120px / 0 0 14px 14px" : "0 0 120px 120px / 0 0 28px 28px" }}
+      >
         {!anon && (
-          <Link href="/journal" aria-label={t.conv.back} className="absolute left-4 top-[max(env(safe-area-inset-top),14px)] flex h-12 w-10 items-center text-[26px] text-ink/70">
-            ‹
+          <Link
+            href="/journal"
+            aria-label={t.conv.back}
+            className="absolute left-2 z-10 flex h-11 w-8 items-center justify-center text-ink-2"
+            style={{ top: compact ? "calc(env(safe-area-inset-top) + 13px)" : "calc(env(safe-area-inset-top) + 14px)" }}
+          >
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+              <path d="M15 6l-6 6 6 6" />
+            </svg>
           </Link>
         )}
-        <div className="flex gap-2">
-          {cards.map((c) => (
-            <button key={c.position} onClick={() => setZoom(c)} className="tarot h-12 w-8 shrink-0">
-              <img src={`${c.card.image_path}-sm.webp`} alt={name(c)?.name} className="h-full w-full object-cover" />
+        {compact ? (
+          <div key="small" className="fade-up flex h-[70px] items-center justify-center gap-3 px-12" style={{ marginTop: "env(safe-area-inset-top)", animationDuration: ".4s" }}>
+            <button onClick={() => last && setZoom(last)} aria-label={last ? name(last)?.name : undefined} className="relative h-[42px] w-12 flex-none">
+              {pile.map((c, i) => (
+                <img
+                  key={c.position}
+                  src={`${c.card.image_path}-sm.webp`}
+                  alt=""
+                  className="absolute top-0 h-[42px] w-7 rounded-[2px] border border-bronze object-cover shadow-[0_4px_8px_-6px_rgba(60,40,20,0.45)]"
+                  style={{ left: layoutsSmall[pile.length][i][0], transform: `rotate(${layoutsSmall[pile.length][i][1]}deg)` }}
+                />
+              ))}
             </button>
-          ))}
-        </div>
-        {cards.length === 1 && (
-          <div className="min-w-0">
-            <p className="title truncate text-[20px]">{`${name(cards[0])?.numeral} · ${name(cards[0])?.name}`}</p>
-            <p className="label mt-0.5 truncate text-ink-3">{cards[0].card.decks.name}</p>
+            <div className="flex min-w-0 flex-col gap-[3px]">
+              <span className="arcana truncate text-[17px] leading-[1.1]">{last && name(last)?.name}</span>
+              <span className="meta truncate">{meta(last, metaTail)}</span>
+            </div>
+          </div>
+        ) : (
+          <div key="big" className="fade-up flex flex-col items-center px-7 pb-[22px] pt-[18px]" style={{ marginTop: "env(safe-area-inset-top)", animationDuration: ".4s" }}>
+            <button onClick={() => last && setZoom(last)} aria-label={last ? name(last)?.name : undefined} className="relative h-[66px] w-24">
+              {pile.map((c, i) => (
+                <img
+                  key={c.position}
+                  src={`${c.card.image_path}-sm.webp`}
+                  alt=""
+                  className="absolute top-0 h-[66px] w-11 rounded-[3px] border border-bronze object-cover shadow-[0_6px_12px_-8px_rgba(60,40,20,0.45)]"
+                  style={{ left: layouts[pile.length][i][0], transform: `rotate(${layouts[pile.length][i][1]}deg)` }}
+                />
+              ))}
+            </button>
+            <span className="arcana mt-[10px] max-w-[310px] text-center text-[20px] leading-[1.2]">{last && name(last)?.name}</span>
+            <span className="meta mt-[5px] whitespace-nowrap">{meta(last, metaTail)}</span>
           </div>
         )}
       </header>
 
-      <main ref={scroller} className="no-scrollbar flex-1 overflow-y-auto px-[10%] pb-6 pt-6">
-        {messages.map((m) => {
-          if (m.kind === "reveal") {
-            const c = cards.find((k) => k.position === m.card_position);
-            return (
-              <div key={m.id} className="fade-up mb-8">
-                {c && cards.length > 1 && <p className="label mb-3 text-ink-3">{`${name(c)?.numeral} · ${name(c)?.name}`}</p>}
-                <p className="display whitespace-pre-line text-[23px]" style={{ lineHeight: 1.25 }}>
-                  {display(m.content)}
-                </p>
-              </div>
-            );
-          }
-          if (m.role === "user") {
-            return (
-              <div key={m.id} data-role="user" ref={m.id === lastUserId && !anchorOnReveal ? anchor : undefined} className="mb-6 ml-7 max-w-[680px] scroll-mt-4 border-l-[0.5px] border-ink-3 pl-4">
-                <p className="label mb-1 text-ink-3">{t.conv.youLabel}</p>
-                <p className="whitespace-pre-line text-[16px] leading-relaxed">{m.content}</p>
-              </div>
-            );
-          }
-          return (
-            <div key={m.id} data-role="assistant" className="mb-6 max-w-[680px]">
-              <p className="label mb-1 text-ink-3">{t.conv.cardLabel}</p>
-              <p className="whitespace-pre-line text-[16px] leading-relaxed">{display(m.content)}</p>
-            </div>
-          );
-        })}
-
-        {streaming && (
-          <div ref={anchorOnReveal ? anchor : undefined} className="mb-6 scroll-mt-4">
-            {streaming.text !== "" &&
-              (streaming.kind === "reveal" ? (
-                <p className="display whitespace-pre-line text-[23px]" style={{ lineHeight: 1.25 }}>
-                  {display(streaming.text)}
-                </p>
-              ) : (
-                <div className="max-w-[680px]">
-                  <p className="label mb-1 text-ink-3">{t.conv.cardLabel}</p>
-                  <p className="whitespace-pre-line text-[16px] leading-relaxed">{display(streaming.text)}</p>
+      <main
+        ref={scroller}
+        onScroll={onScroll}
+        className="no-scrollbar flex-1 overflow-y-auto px-7 pb-8 md:px-[10%]"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 182px)" }}
+      >
+        <div className="mx-auto max-w-[680px]">
+          {messages.map((m, idx) => {
+            if (m.kind === "reveal") {
+              const c = cards.find((k) => k.position === m.card_position);
+              const extra = Boolean(c?.is_extra);
+              return (
+                <div key={m.id}>
+                  {c && extra && plate(c)}
+                  {revealText(m.content, extra, false)}
                 </div>
-              ))}
-            {/* Le picto reste sous le texte, que la réponse pousse vers le bas. */}
-            <div className="flex justify-center py-4">
-              <Picto size={40} animated />
+              );
+            }
+            if (m.role === "user") {
+              return (
+                <div
+                  key={m.id}
+                  data-role="user"
+                  ref={m.id === lastUserId && !anchorOnReveal ? anchor : undefined}
+                  className="ml-7 mt-[26px] scroll-mt-[90px] border-l border-rule-msg pl-4"
+                >
+                  <span className="text-[10px] uppercase tracking-[0.18em] text-ink-2">{t.conv.youLabel}</span>
+                  <p className="mt-[6px] whitespace-pre-line text-[16px] leading-[25px]">{m.content}</p>
+                </div>
+              );
+            }
+            return (
+              <p key={m.id} data-role="assistant" className={`${messages[idx - 1]?.kind === "reveal" ? "mt-[14px]" : "mt-[26px]"} whitespace-pre-line text-[16px] leading-[25px]`}>
+                {display(m.content)}
+              </p>
+            );
+          })}
+
+          {/* Cartes supplémentaires dont le texte n'est pas encore arrivé. */}
+          {cards
+            .filter((c) => c.is_extra && !reveals.has(c.position))
+            .map((c) => (
+              <div key={`pending-${c.position}`}>
+                {plate(c, anchorOnReveal && streaming?.position === c.position)}
+                {streaming?.kind === "reveal" && streaming.position === c.position && streaming.text !== "" && revealText(streaming.text, true, true)}
+              </div>
+            ))}
+
+          {streaming && (
+            <div data-role="streaming" className="mb-2">
+              {streaming.text !== "" &&
+                (streaming.kind === "reveal"
+                  ? !cards[streaming.position ?? 0]?.is_extra && revealText(streaming.text, false, false)
+                  : <p className="mt-[26px] whitespace-pre-line text-[16px] leading-[25px]">{display(streaming.text)}</p>)}
+              {/* Le picto reste sous le texte, que la réponse pousse vers le bas. */}
+              <div className="flex justify-center py-4">
+                <Picto size={40} animated />
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {error && (
-          <div className="fade-up my-8 text-center">
-            <p className="title text-[22px]">{t.conv.error}</p>
-            <p className="mt-2 text-[14px] text-ink-2">{t.conv.errorBody}</p>
-            <button onClick={() => setError(false)} className="btn-primary label mt-6">
-              {t.conv.retry}
-            </button>
-          </div>
-        )}
+          {error && (
+            <div className="fade-up my-8 text-center">
+              <p className="title text-[22px]">{t.conv.error}</p>
+              <p className="mt-2 text-[14px] text-ink-2">{t.conv.errorBody}</p>
+              <button onClick={() => setError(false)} className="btn-primary mt-6">
+                {t.conv.retry}
+              </button>
+            </div>
+          )}
 
-        {suggestsCard && !anon && (
-          <div className="fade-up my-6 flex justify-center">
-            <button onClick={() => setPicker(true)} className="btn-primary label">
-              {t.conv.drawCard}
-            </button>
-          </div>
-        )}
-        <div ref={spacer} aria-hidden="true" />
+          {suggestsCard && (
+            <div className="fade-up mt-6 flex justify-center">
+              <button onClick={drawCard} disabled={busyNow} className="cta-text disabled:opacity-50">
+                <span>{t.conv.drawAnother}</span>
+              </button>
+            </div>
+          )}
+          <div ref={spacer} aria-hidden="true" />
+        </div>
       </main>
 
-      {/* Zone de saisie : sous une ligne, sans boîte ; flèche visible au premier caractère. */}
+      {/* Bas d'écran : le champ, puis « Tirer une carte » en permanence. */}
       {!wall && (
-        <footer className="hair-t bg-canvas px-[10%] pb-[max(env(safe-area-inset-bottom),14px)] pt-2">
-          <div className="flex items-end gap-3">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey && window.matchMedia("(pointer: fine)").matches) {
-                  e.preventDefault();
-                  send();
-                }
-              }}
-              rows={1}
-              placeholder={t.conv.placeholder}
-              className="max-h-40 min-h-[44px] flex-1 resize-none bg-transparent py-3 text-[16px] outline-none placeholder:text-ink/40"
-              style={{ fieldSizing: "content" } as React.CSSProperties}
-            />
-            {input.trim() && (
-              <button onClick={send} disabled={Boolean(streaming)} aria-label="Envoyer" className="h-11 px-1 text-[28px] leading-none text-slate disabled:opacity-40">
-                ›
-              </button>
+        <footer className="hair-t bg-canvas px-7 pb-[max(env(safe-area-inset-bottom),10px)] pt-3 md:px-[10%]">
+          <div className="mx-auto max-w-[680px]">
+            <div className="flex items-end gap-3">
+              <label htmlFor="mc-msg" className="sr-only">
+                {t.conv.placeholder}
+              </label>
+              <textarea
+                id="mc-msg"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey && window.matchMedia("(pointer: fine)").matches) {
+                    e.preventDefault();
+                    send();
+                  }
+                }}
+                rows={1}
+                placeholder={t.conv.placeholder}
+                className="max-h-40 min-h-[36px] flex-1 resize-none bg-transparent py-1.5 text-[16px] outline-none placeholder:text-ink-2/70"
+                style={{ fieldSizing: "content" } as React.CSSProperties}
+              />
+              {input.trim() && (
+                <button onClick={send} disabled={Boolean(streaming)} aria-label="Envoyer" className="h-9 px-1 text-[28px] leading-none text-slate disabled:opacity-40">
+                  ›
+                </button>
+              )}
+            </div>
+            {/* Sans compte : rappel discret que l'échange sera perdu, dès la première lecture. */}
+            {anon && !streaming && messages.some((m) => m.role === "assistant") && (
+              <p className="pt-1 text-[13px] text-ink-2">
+                {t.conv.notSaved}{" "}
+                <button onClick={() => setKeep(true)} className="btn-link text-[13px]">
+                  {t.conv.keepIt}
+                </button>
+              </p>
             )}
-          </div>
-          {/* Sans compte : rappel discret que l'échange sera perdu, dès la première lecture. */}
-          {anon && !streaming && messages.some((m) => m.role === "assistant") && (
-            <p className="pb-1 pt-1 text-[13px] text-ink-3">
-              {t.conv.notSaved}{" "}
-              <button onClick={() => setKeep(true)} className="btn-link text-[13px] text-ink-2">
-                {t.conv.keepIt}
-              </button>
-            </p>
-          )}
-          {!anon && !suggestsCard && userCount >= 2 && !streaming && (
-            <button onClick={() => setPicker(true)} className="btn-link pb-1 pt-1 text-ink-3">
-              {t.conv.drawCard}
+            <button onClick={drawCard} disabled={busyNow} className="mt-1 flex h-11 items-center text-[14px] disabled:opacity-50">
+              <span className="border-b border-slate pb-[2px]">{t.conv.drawCard}</span>
             </button>
-          )}
+          </div>
         </footer>
       )}
-
-      {/* Choix d'une carte parmi cinq, face cachée. */}
-      <Sheet open={picker} onClose={() => setPicker(false)}>
-        <p className="display text-center text-[28px]">{t.conv.pickCard}</p>
-        <p className="mt-1 text-center text-[13px] text-ink-3">{t.conv.pickHelp}</p>
-        <div className="mt-8 flex justify-center gap-2 pb-6">
-          {[0, 1, 2, 3, 4].map((i) => (
-            <button
-              key={i}
-              onClick={drawCard}
-              className="tarot aspect-[2/3] w-[18%] transition-transform duration-300 hover:-translate-y-1 active:scale-95"
-              style={{ transform: `rotate(${(i - 2) * 3}deg)` }}
-            >
-              <img src="/brand/card-back.webp" alt="" className="h-full w-full object-cover" />
-            </button>
-          ))}
-        </div>
-      </Sheet>
 
       <PlansSheet locale={locale} open={plans} onClose={() => setPlans(false)} />
 
@@ -363,7 +473,7 @@ export function Conversation({
         <div className="pb-4 text-center">
           <p className="display text-[30px]">{offer === "early" ? t.wall.earlyTitle : t.wall.offerTitle}</p>
           <p className="mt-3 text-[15px] text-ink-2">{offer === "early" ? t.wall.earlyBody : t.wall.offerBody}</p>
-          <button onClick={closeOffer} className="btn-primary label mt-8 w-full">
+          <button onClick={closeOffer} className="btn-primary mt-8 w-full">
             {t.wall.offerCta}
           </button>
         </div>
@@ -374,8 +484,8 @@ export function Conversation({
           <div className="tarot aspect-[2/3] w-full max-w-[340px]">
             <img src={`${zoom.card.image_path}.webp`} alt={name(zoom)?.name} className="h-full w-full object-cover" />
           </div>
-          <p className="display mt-6 text-[28px]">{`${name(zoom)?.numeral} · ${name(zoom)?.name}`}</p>
-          <p className="label mt-2 text-ink-3">{zoom.card.decks.name}</p>
+          <p className="arcana mt-6 text-[20px]">{name(zoom)?.name}</p>
+          <p className="meta mt-2">{meta(zoom, myDeck ? t.conv.myDeck : t.conv.deckLine(zoom.card.decks.name))}</p>
         </div>
       )}
     </div>

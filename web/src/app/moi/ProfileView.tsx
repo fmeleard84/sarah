@@ -89,8 +89,8 @@ export function ProfileView(props: {
 
   return (
     <>
-      <header className="pt-6">
-        <h1 className="display text-[44px]">{t.me.title}</h1>
+      <header className="pt-5">
+        <h1 className="page-title">{t.me.title}</h1>
         <p className="mt-2 text-[13px] text-ink-3">{t.me.stats(props.stats.cards, props.stats.convs)}</p>
       </header>
 

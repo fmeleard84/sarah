@@ -6,11 +6,56 @@ import { createServiceClient } from "@/lib/supabase/admin";
 import { EDITABLE_KEYS, type Locale } from "@/lib/i18n";
 import { cleanText, completeChat } from "@/lib/llm";
 import { PLANS, type PlanId } from "@/lib/plans";
+import { archPalette } from "@/lib/archColor";
+import { SUPABASE_SERVER_URL } from "@/lib/supabase/config";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
 type Result = { ok: true } | { ok: false; error: string };
 
 const fail = (error: unknown): Result => ({ ok: false, error: error instanceof Error ? error.message : String(error) });
 const refresh = () => revalidatePath("/", "layout");
+
+// ─── Arche des cartes ───────────────────────────────────────────────────────
+
+/** Image d'une carte : fichiers d'origine dans public/decks, sinon le bucket « decks ». */
+async function cardImage(imagePath: string): Promise<Buffer> {
+  if (imagePath.startsWith("/decks/")) return readFile(join(process.cwd(), "public", `${imagePath}.webp`));
+  if (!imagePath.startsWith("/sb/")) throw new Error("Chemin d'image inconnu.");
+  const res = await fetch(`${SUPABASE_SERVER_URL}${imagePath.slice(3)}.webp`);
+  if (!res.ok) throw new Error(`Image introuvable (${res.status}).`);
+  return Buffer.from(await res.arrayBuffer());
+}
+
+/** Couleurs extraites de la carte, la suggestion automatique en tête. */
+export async function getArchPalette(deckId: string, arcana: number): Promise<{ ok: true; colors: string[] } | { ok: false; error: string }> {
+  try {
+    await assertAdmin();
+    const { data: card } = await createServiceClient().from("cards").select("image_path").eq("deck_id", deckId).eq("arcana", arcana).single();
+    if (!card) return { ok: false, error: "Carte introuvable." };
+    return { ok: true, colors: await archPalette(await cardImage(card.image_path)) };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+export async function saveArch(deckId: string, arcana: number, color: string | null, intensity: number): Promise<Result> {
+  try {
+    await assertAdmin();
+    if (color !== null && !/^#[0-9A-Fa-f]{6}$/.test(color)) return { ok: false, error: "Couleur invalide." };
+    const k = Math.min(0.6, Math.max(0, Math.round(intensity * 100) / 100));
+    const { error } = await createServiceClient()
+      .from("cards")
+      .update({ arch_color: color?.toUpperCase() ?? null, arch_intensity: k })
+      .eq("deck_id", deckId)
+      .eq("arcana", arcana);
+    if (error) throw error;
+    refresh();
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
 
 // ─── Decks ──────────────────────────────────────────────────────────────────
 

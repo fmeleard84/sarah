@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "@/components/Toast";
+import { archMix } from "@/lib/arch";
+import { ArchEditor } from "./ArchEditor";
 
 const img = (path: string) => `${path}-sm.webp`;
 
@@ -13,7 +15,7 @@ export function CardGrid({
   arcana,
 }: {
   deckId: string;
-  cards: { arcana: number; image_path: string }[];
+  cards: { arcana: number; image_path: string; arch_color: string | null; arch_intensity: number }[];
   arcana: { number: number; numeral: string; name: string }[];
 }) {
   const router = useRouter();
@@ -22,6 +24,10 @@ export function CardGrid({
   const [busy, setBusy] = useState<number | null>(null);
   const [local, setLocal] = useState<Record<number, string>>({});
   const byArcana = new Map(cards.map((c) => [c.arcana, c.image_path]));
+  const [arch, setArch] = useState<Record<number, { color: string | null; k: number }>>(() =>
+    Object.fromEntries(cards.map((c) => [c.arcana, { color: c.arch_color, k: c.arch_intensity }])),
+  );
+  const [editing, setEditing] = useState<number | null>(null);
 
   function pick(n: number) {
     if (busy !== null) return;
@@ -42,6 +48,7 @@ export function CardGrid({
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json.error ?? `Erreur ${res.status}`);
       setLocal((l) => ({ ...l, [n]: json.image_path }));
+      setArch((a) => ({ ...a, [n]: { color: json.arch_color ?? null, k: a[n]?.k ?? 0.3 } }));
       toast(`${arcana[n].numeral} · ${arcana[n].name} : carte remplacée.`);
       router.refresh();
     } catch (e) {
@@ -81,14 +88,42 @@ export function CardGrid({
                     {busy === a.number ? "Envoi…" : "Remplacer"}
                   </div>
                 </div>
-                <p className="mt-2 text-[12px] text-ink-2">
+              </button>
+              <div className="mt-2 flex items-center gap-2">
+                <p className="min-w-0 flex-1 text-[12px] text-ink-2">
                   <span className="text-ink-3">{a.numeral}</span> {a.name}
                 </p>
-              </button>
+                {path && (
+                  <button
+                    type="button"
+                    onClick={() => setEditing(a.number)}
+                    title="Couleur de l'arche"
+                    aria-label={`Couleur de l'arche · ${a.name}`}
+                    className="h-6 w-6 flex-none rounded-full border border-rule"
+                    style={{ background: archMix(arch[a.number]?.color, arch[a.number]?.k) }}
+                  />
+                )}
+              </div>
             </li>
           );
         })}
       </ul>
+      {editing !== null && (local[editing] ?? byArcana.get(editing)) && (
+        <ArchEditor
+          key={editing}
+          deckId={deckId}
+          arcana={editing}
+          label={`${arcana[editing].numeral} · ${arcana[editing].name}`}
+          image={(local[editing] ?? byArcana.get(editing))!}
+          color={arch[editing]?.color ?? null}
+          intensity={arch[editing]?.k ?? 0.3}
+          onClose={() => setEditing(null)}
+          onSaved={(color, k) => {
+            setArch((x) => ({ ...x, [editing]: { color, k } }));
+            setEditing(null);
+          }}
+        />
+      )}
     </>
   );
 }

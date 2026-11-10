@@ -113,7 +113,6 @@ check(sql(`select use_my_deck from profiles where id='${uid}'`) === "t", "deck c
 step("My Deck : tirage");
 await page.goto(`${BASE}/tirage`);
 await page.waitForTimeout(600);
-check(await page.getByText("Mon deck", { exact: false }).first().isVisible(), "l'accueil nomme mon deck");
 await shot("32-accueil-mon-deck");
 const conv = await api("/api/conversations", "POST", { spread: 1 });
 check(conv.status === 200 && Boolean(conv.body?.id), "conversation ouverte");
@@ -122,9 +121,10 @@ check(sql(`select deck_id is null from conversations where id='${id}'`) === "t",
 check(sql(`select count(*) from conversation_cards cc join my_deck_cards m on m.card_id=cc.card_id and m.user_id='${uid}' where cc.conversation_id='${id}'`) === "1", "la carte vient bien de mon deck");
 await page.goto(`${BASE}/c/${id}`);
 const PICTO = "main svg g[style*='picto']";
-await page.waitForSelector("main p.display", { timeout: 60000 });
+await page.waitForSelector("main p[data-role=reveal]", { timeout: 60000 });
 await page.waitForFunction((s) => !document.querySelector(s), PICTO, { timeout: 120000 });
 await page.waitForTimeout(800);
+check(/my deck/i.test(await page.locator("header").innerText()), "l'en-tête du chat nomme My deck");
 await shot("33-conversation");
 
 step("relance : conclusion, puis nouveau sujet");

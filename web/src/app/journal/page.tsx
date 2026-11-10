@@ -32,6 +32,7 @@ export default async function Journal() {
       favorite: c.favorite,
       createdAt: c.created_at,
       images: cards.map((k) => `${k.card.image_path}-sm.webp`),
+      numbers: cards.map((k) => k.card.arcana),
       names: cards.map((k) => (locale === "en" ? arcana[k.card.arcana].name_en : arcana[k.card.arcana].name_fr)),
     };
   });

@@ -73,7 +73,7 @@ export function MyDeckView(props: {
         ‹
       </Link>
       <header className="mt-2">
-        <h1 className="display text-[44px]">{t.myDeck}</h1>
+        <h1 className="page-title">{t.myDeck}</h1>
         <div className="mt-2 flex items-baseline justify-between gap-4">
           <p className="text-[13px] text-ink-3">{t.myDeckCount(count, MY_DECK_SIZE)}</p>
           <button onClick={() => setColumns(columns === 2 ? 4 : 2)} className="btn-link text-ink-3" style={{ fontSize: 14 }}>

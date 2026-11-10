@@ -1,12 +1,12 @@
 /**
  * Textes de l'interface, FR et EN.
  *
- * Règles de casse Morning Cards (verrouillées le 7 juillet) :
- * - Titres : Instrument Serif romain, sans majuscule, avec point.
- * - Titres émotionnels, discours direct : Instrument Serif, sans majuscule, sans point.
- * - Corps de marque : Instrument Sans, tout en minuscules, avec point.
- * - Corps fonctionnel : Instrument Sans, casse normale, avec point.
- * - Boutons en casse de phrase ; les petites capitales restent aux légendes.
+ * Règles de casse Morning Cards (7 juillet, revues le 9 novembre) :
+ * - Titres de page : Cormorant italique, minuscules, sans point (« journal », « bonjour, sarah »).
+ * - Titres émotionnels, discours direct : Cormorant italique, sans majuscule, sans point.
+ * - Corps de marque : DM Sans, tout en minuscules, avec point (« pose ton doigt sur la carte. »).
+ * - Corps fonctionnel : DM Sans, casse normale, avec point.
+ * - CTA texte en casse de phrase, avec point (« Révéler le message. ») ; les petites capitales restent aux légendes.
  * Jamais de tiret cadratin. Pas d'emoji. Le FR et l'EN sont des expressions
  * distinctes, pas des traductions mot à mot.
  */
@@ -30,27 +30,24 @@ const fr = {
   },
 
   home: {
-    myDeck: "Mon deck",
     hello: (name: string | null) => (name ? `bonjour, ${name.toLowerCase()}` : "bonjour"),
-    rhythm: { 1: "un moment. une carte.", 3: "trois cartes. un fil.", 5: "cinq cartes. une traversée." } as Record<number, string>,
-    spread: (n: number) => (n === 1 ? "1 carte" : `${n} cartes`),
-    hold: "Pose ton doigt sur la carte.",
-    reveal: "révèle son message",
-    next: "carte suivante",
-    deck: (name: string) => `Tu tires avec ${name}.`,
+    hold: "pose ton doigt sur la carte.",
+    drawAria: "Tirer la carte",
+    reveal: "Révéler le message.",
     exploration: (d: number) => `Offre Exploration · ${d} jour${d > 1 ? "s" : ""} restant${d > 1 ? "s" : ""}`,
     early: (d: number) => `Early adopter · accès illimité, ${d} jour${d > 1 ? "s" : ""} restant${d > 1 ? "s" : ""}`,
-    lockedSpread: "Ce tirage est disponible avec Ritual et Clarity.",
-    transition: "un geste. un insight.",
   },
 
   conv: {
-    cardLabel: "La carte",
     youLabel: "Toi",
     placeholder: "Écris ce qui te traverse…",
     drawCard: "Tirer une carte",
-    pickCard: "choisis ta carte",
-    pickHelp: "Laisse ta main décider.",
+    drawAnother: "Tirer une autre carte.",
+    deckLine: (deck: string) => `deck ${deck}`,
+    myDeck: "My deck",
+    /** Ligne de l'en-tête quand la conversation a plusieurs cartes. */
+    cardsLine: (n: number, period: "morning" | "afternoon" | "evening" | null) =>
+      `${n} cartes${period === "morning" ? " ce matin" : period === "afternoon" ? " cet après-midi" : period === "evening" ? " ce soir" : ""}`,
     thinking: "",
     error: "la conversation s'est interrompue.",
     errorBody: "Le message n'a pas pu être envoyé. Réessaie dans un instant.",
@@ -108,7 +105,7 @@ const fr = {
   },
 
   decks: {
-    myDeck: "mon deck.",
+    myDeck: "mon deck",
     myDeckLink: (n: number, total: number) => `Mon deck · ${n}/${total}`,
     myDeckCount: (n: number, total: number) => `${n} carte${n > 1 ? "s" : ""} sur ${total}`,
     myDeckHelp: "Compose ton deck : choisis une version de chaque arcane, dans tous les decks.",
@@ -122,7 +119,7 @@ const fr = {
     mineLocked: "Le tirage avec ton deck est disponible avec Ritual et Clarity.",
     incomplete: (n: number) => `Complète ton deck pour tirer avec lui : il manque ${n} carte${n > 1 ? "s" : ""}.`,
     columns: (n: number) => `Afficher sur ${n} colonnes`,
-    title: "decks.",
+    title: "decks",
     all: "Tous",
     favorites: "Favoris",
     cards: (n: number) => `${n} cartes`,
@@ -137,7 +134,7 @@ const fr = {
   },
 
   journal: {
-    title: "journal.",
+    title: "journal",
     empty: "Ton journal est vide.",
     emptyBody: "Chaque tirage y laisse une trace.",
     week: "Cette semaine",
@@ -161,7 +158,7 @@ const fr = {
     manageBilling: "Gérer mon abonnement",
     support: "Aide",
     contact: "Nous écrire",
-    title: "toi.",
+    title: "toi",
     stats: (cards: number, convs: number) => `${cards} carte${cards > 1 ? "s" : ""} tirée${cards > 1 ? "s" : ""} · ${convs} conversation${convs > 1 ? "s" : ""}`,
     mostDrawn: "tes cartes les plus tirées.",
     you: "toi",
@@ -329,27 +326,23 @@ const en: Dict = {
   },
 
   home: {
-    myDeck: "My deck",
     hello: (name: string | null) => (name ? `hello, ${name.toLowerCase()}` : "hello"),
-    rhythm: { 1: "one moment. one card.", 3: "three cards. one thread.", 5: "five cards. one crossing." },
-    spread: (n: number) => (n === 1 ? "1 card" : `${n} cards`),
-    hold: "Rest your finger on the card.",
-    reveal: "reveal its message",
-    next: "next card",
-    deck: (name: string) => `You're drawing with ${name}.`,
+    hold: "rest your finger on the card.",
+    drawAria: "Draw the card",
+    reveal: "Reveal the message.",
     exploration: (d: number) => `Exploration offer · ${d} day${d > 1 ? "s" : ""} left`,
     early: (d: number) => `Early adopter · unlimited access, ${d} day${d > 1 ? "s" : ""} left`,
-    lockedSpread: "This spread comes with Ritual and Clarity.",
-    transition: "one gesture. one insight.",
   },
 
   conv: {
-    cardLabel: "The card",
     youLabel: "You",
     placeholder: "Write what's on your mind…",
     drawCard: "Draw a card",
-    pickCard: "choose your card",
-    pickHelp: "Let your hand decide.",
+    drawAnother: "Draw another card.",
+    deckLine: (deck: string) => `${deck} deck`,
+    myDeck: "My deck",
+    cardsLine: (n: number, period: "morning" | "afternoon" | "evening" | null) =>
+      `${n} cards${period === "morning" ? " this morning" : period === "afternoon" ? " this afternoon" : period === "evening" ? " tonight" : ""}`,
     thinking: "",
     error: "the conversation was interrupted.",
     errorBody: "Your message couldn't be sent. Try again in a moment.",
@@ -407,7 +400,7 @@ const en: Dict = {
   },
 
   decks: {
-    myDeck: "my deck.",
+    myDeck: "my deck",
     myDeckLink: (n: number, total: number) => `My deck · ${n}/${total}`,
     myDeckCount: (n: number, total: number) => `${n} card${n > 1 ? "s" : ""} of ${total}`,
     myDeckHelp: "Build your deck: pick one version of each arcana, from every deck.",
@@ -421,7 +414,7 @@ const en: Dict = {
     mineLocked: "Drawing with your deck comes with Ritual and Clarity.",
     incomplete: (n: number) => `Complete your deck before drawing with it: ${n} card${n > 1 ? "s" : ""} missing.`,
     columns: (n: number) => `Show ${n} columns`,
-    title: "decks.",
+    title: "decks",
     all: "All",
     favorites: "Favorites",
     cards: (n: number) => `${n} cards`,
@@ -436,7 +429,7 @@ const en: Dict = {
   },
 
   journal: {
-    title: "journal.",
+    title: "journal",
     empty: "Your journal is empty.",
     emptyBody: "Every draw leaves a trace here.",
     week: "This week",
@@ -460,7 +453,7 @@ const en: Dict = {
     manageBilling: "Manage my subscription",
     support: "Help",
     contact: "Write to us",
-    title: "you.",
+    title: "you",
     stats: (cards: number, convs: number) => `${cards} card${cards > 1 ? "s" : ""} drawn · ${convs} conversation${convs > 1 ? "s" : ""}`,
     mostDrawn: "your most drawn cards.",
     you: "you",

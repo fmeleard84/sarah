@@ -29,8 +29,8 @@ export default async function Library() {
 
   return (
     <AppShell locale={profile.locale} firstName={profile.first_name}>
-      <header className="pt-6">
-        <h1 className="display text-[44px]">{t.decks.title}</h1>
+      <header className="pt-5">
+        <h1 className="page-title">{t.decks.title}</h1>
         <div className="mt-2 flex items-baseline justify-between gap-4">
           <p className="text-[13px] text-ink-3">{t.decks.cards(decks.length * 22)}</p>
           <Link href="/decks/mon-deck" className="btn-link text-slate" style={{ fontSize: 14 }}>

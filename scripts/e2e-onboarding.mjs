@@ -50,30 +50,27 @@ await page.waitForURL(/tirage/);
 await page.waitForTimeout(800);
 await shot(page, "03-tirage");
 
-step("toucher maintenu sur la carte");
-const card = page.locator(".tarot.relative.z-10");
-const box = await card.boundingBox();
-await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-await page.mouse.down();
-await page.waitForTimeout(700);
+step("toucher la carte : apparition, l'arche prend la couleur de la carte");
+const arch = page.locator("main div[aria-hidden=true]").first();
+const archBefore = await arch.evaluate((e) => getComputedStyle(e).backgroundColor);
+await page.getByRole("button", { name: /tirer la carte/i }).click({ force: true }); // la carte flotte
+await page.waitForTimeout(900);
 await shot(page, "04-revelation");
-await page.waitForTimeout(1500);
-await page.mouse.up();
-await page.waitForTimeout(500);
+await page.waitForTimeout(1800);
 await shot(page, "05-revelee");
+const archAfter = await arch.evaluate((e) => getComputedStyle(e).backgroundColor);
+console.log(`  arche : ${archBefore} → ${archAfter}`);
 
-step("révèle son message");
-await page.getByRole("button", { name: /révèle son message/i }).click();
-await page.waitForTimeout(400);
-await shot(page, "06-transition");
+step("révéler le message");
+await page.getByRole("button", { name: /révéler le message/i }).click();
 await page.waitForURL(/\/c\//, { timeout: 10000 });
 
 step("texte d'accueil de la carte");
-await page.waitForSelector("p.display", { timeout: 60000 });
+await page.waitForSelector("p[data-role=reveal]", { timeout: 60000 });
 await page.waitForFunction((s) => !document.querySelector(s), PICTO, { timeout: 90000 });
 await page.waitForTimeout(1000);
 await shot(page, "07-conversation");
-const intro = await page.locator("main p.display").first().innerText();
+const intro = await page.locator("main p[data-role=reveal]").first().innerText();
 console.log(`  accueil : ${intro}`);
 check(!/\bdeck\b/i.test(intro) && (!deckName || !intro.toLowerCase().includes(deckName.toLowerCase())), "l'accueil ne parle pas du deck");
 
@@ -88,7 +85,7 @@ for (const [i, msg] of [LONG, "Oui, j'ai peur de quitter ce que je connais."].en
     .waitForFunction(
       (s) => {
         const g = document.querySelector(s);
-        const p = [...(g?.closest("div.mb-6")?.querySelectorAll("p") ?? [])].pop();
+        const p = [...(g?.closest("[data-role=streaming]")?.querySelectorAll("p") ?? [])].pop();
         return Boolean(g && p && p.textContent.length > 20 && p.getBoundingClientRect().bottom <= g.getBoundingClientRect().top + 1);
       },
       PICTO,
@@ -107,7 +104,8 @@ for (const [i, msg] of [LONG, "Oui, j'ai peur de quitter ce que je connais."].en
     return { scrollTop: main.scrollTop, offset: mine.getBoundingClientRect().top - main.getBoundingClientRect().top };
   });
   check(Math.abs(pos.scrollTop - during) <= 2, `pas de saut à la fin de la réponse (${during} puis ${pos.scrollTop})`);
-  check(pos.offset >= 0 && pos.offset < 80, `début du tour ancré en haut (${Math.round(pos.offset)} px)`);
+  // L'en-tête replié (70 px) recouvre le haut du fil : le tour commence juste dessous.
+  check(pos.offset >= 60 && pos.offset < 140, `début du tour ancré sous l'en-tête replié (${Math.round(pos.offset)} px)`);
   await shot(page, `08-reponse-${i + 1}`);
 }
 
@@ -154,10 +152,10 @@ check(mine === 1 && last.role === "assistant", "le 3e message part une seule foi
 if (early) {
   step("Early adopter : une carte supplémentaire est tirée sans paywall");
   await page.getByRole("button", { name: /tirer une carte/i }).first().click();
-  await page.waitForTimeout(600);
-  await page.locator('[role=dialog] button.tarot').nth(2).click();
-  await page.waitForFunction(() => document.querySelectorAll("header button.tarot").length === 2, null, { timeout: 15000 }).catch(() => {});
-  check(await page.locator("header button.tarot").count() === 2, "deuxième carte ajoutée au tirage");
+  await page.waitForFunction(() => document.querySelectorAll("main figure").length === 1, null, { timeout: 15000 }).catch(() => {});
+  check(await page.locator("main figure").count() === 1, "deuxième carte ajoutée au fil (planche hors texte)");
+  await page.waitForFunction(() => document.querySelectorAll("p[data-role=reveal]").length === 2, null, { timeout: 90000 }).catch(() => {});
+  check(await page.locator("p[data-role=reveal]").count() === 2, "texte de la deuxième carte");
   await shot(page, "11-early-carte");
   // Pour vérifier le paywall, la suite repasse ce compte en Exploration.
   sql(`delete from early_adopters where user_id=(select id from auth.users where email='${email}'); update profiles set plan='exploration' where id=(select id from auth.users where email='${email}')`);
@@ -167,9 +165,6 @@ if (early) {
 
 step("carte supplémentaire → paywall attendu (Exploration = 1 carte)");
 await page.getByRole("button", { name: /tirer une carte/i }).first().click();
-await page.waitForTimeout(600);
-await shot(page, "11-choix-carte");
-await page.locator('[role=dialog] button.tarot').nth(2).click();
 await page.waitForSelector("text=va plus loin", { timeout: 10000 });
 await page.waitForTimeout(600);
 await shot(page, "12-paywall");
@@ -192,7 +187,7 @@ for (const path of ["/journal", "/decks", "/moi", "/offres", "/tirage"]) {
   await page.goto(BASE + path);
   await page.waitForTimeout(1000);
   if (path === "/journal") {
-    await page.locator("li p.title").first().evaluate((e) => (e.textContent = "Thème : un titre vraiment très long qui ne tient pas sur une seule ligne"));
+    await page.locator("li span.italic").first().evaluate((e) => (e.textContent = "Thème : un titre vraiment très long qui ne tient pas sur une seule ligne"));
   }
   const m = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth }));
   check(m.sw <= m.cw, `${path} sans débordement (${m.sw}/${m.cw})`);

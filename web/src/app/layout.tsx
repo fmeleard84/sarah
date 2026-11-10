@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Instrument_Sans, Instrument_Serif } from "next/font/google";
+import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import { cookies } from "next/headers";
 import { getLocale } from "@/lib/session";
 import { THEME_COOKIE, isTheme } from "@/lib/theme";
@@ -9,13 +9,14 @@ import { I18nProvider } from "@/components/I18nProvider";
 import { getTextOverrides } from "@/lib/texts";
 import "./globals.css";
 
-const serif = Instrument_Serif({
+// DA de Sarah du 9 novembre : Cormorant Garamond (titres, noms d'arcanes, CTA texte) et DM Sans.
+const serif = Cormorant_Garamond({
   subsets: ["latin"],
-  weight: "400",
+  weight: ["400", "500"],
   style: ["normal", "italic"],
-  variable: "--font-instrument-serif",
+  variable: "--font-cormorant",
 });
-const sans = Instrument_Sans({ subsets: ["latin"], variable: "--font-instrument-sans" });
+const sans = DM_Sans({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-dm-sans" });
 
 export const metadata: Metadata = {
   title: "Morning Cards",

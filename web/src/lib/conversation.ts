@@ -16,7 +16,14 @@ export type Refusal =
 export interface ConvCard {
   position: number;
   is_extra: boolean;
-  card: { id: string; arcana: number; image_path: string; decks: { slug: string; name: string; description_fr: string; description_en: string } };
+  card: {
+    id: string;
+    arcana: number;
+    image_path: string;
+    arch_color: string | null;
+    arch_intensity: number;
+    decks: { slug: string; name: string; description_fr: string; description_en: string };
+  };
 }
 
 const db = () => createServiceClient();
@@ -130,7 +137,7 @@ export async function getConversation(id: string, userId: string) {
 export async function getConversationCards(id: string): Promise<ConvCard[]> {
   const { data } = await db()
     .from("conversation_cards")
-    .select("position, is_extra, card:cards(id, arcana, image_path, decks(slug, name, description_fr, description_en))")
+    .select("position, is_extra, card:cards(id, arcana, image_path, arch_color, arch_intensity, decks(slug, name, description_fr, description_en))")
     .eq("conversation_id", id)
     .order("position");
   return (data ?? []) as unknown as ConvCard[];

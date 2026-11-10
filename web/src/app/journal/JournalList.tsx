@@ -12,6 +12,7 @@ export interface Entry {
   createdAt: string;
   images: string[];
   names: string[];
+  numbers: number[];
 }
 
 type Tab = "week" | "month" | "all" | "favorites";
@@ -41,17 +42,18 @@ export function JournalList({ locale, entries: initial }: { locale: Locale; entr
 
   return (
     <>
-      <header className="pt-6">
-        <h1 className="display text-[44px]">{t.title}</h1>
+      <header className="pt-5">
+        <h1 className="page-title">{t.title}</h1>
       </header>
-      <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2" role="tablist">
+      {/* Onglets : petites capitales, toujours sur une ligne, filet sous la rangée. */}
+      <div className="no-scrollbar mt-[14px] flex gap-5 overflow-x-auto border-b border-rule" role="tablist" aria-label={t.title}>
         {(["week", "month", "all", "favorites"] as Tab[]).map((k) => (
           <button
             key={k}
             role="tab"
             aria-selected={tab === k}
             onClick={() => setTab(k)}
-            className={`label shrink-0 border-b pb-1 ${tab === k ? "border-slate text-ink" : "border-transparent text-ink-3"}`}
+            className={`label -mb-px h-10 shrink-0 whitespace-nowrap ${tab === k ? "border-b-[1.5px] border-slate text-ink" : "text-ink-2"}`}
           >
             {t[k]}
           </button>
@@ -64,32 +66,37 @@ export function JournalList({ locale, entries: initial }: { locale: Locale; entr
           <p className="mt-2 text-[14px] text-ink-2">{t.emptyBody}</p>
         </div>
       ) : (
-        <ul className="mt-6">
+        <ul className="mt-2">
           {shown.map((e) => (
-            <li key={e.id} className="flex items-center gap-4 border-b border-rule py-4">
-              <Link href={`/c/${e.id}`} className="flex min-w-0 flex-1 items-center gap-4">
-                <div className="relative h-[70px] w-[54px] shrink-0">
-                  {e.images.slice(0, 3).map((src, i) => (
-                    <div
-                      key={i}
-                      className="tarot absolute h-[64px] w-[43px]"
-                      style={{ left: i * 5, top: i * -2, transform: `rotate(${i * 4}deg)`, zIndex: 3 - i }}
-                    >
-                      <img src={src} alt="" className="h-full w-full object-cover" />
-                    </div>
-                  ))}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[12px] text-ink-3">{fmt.format(new Date(e.createdAt))}</p>
-                  <p className="title mt-0.5 line-clamp-2 text-[19px]">{e.title ?? t.untitled}</p>
-                  <p className="mt-0.5 truncate text-[12px] text-ink-2">
-                    {e.names.slice(0, 2).join(" · ")}
-                    {e.names.length > 2 ? ` ·+${e.names.length - 2}` : ""}
-                  </p>
+            <li key={e.id} className="flex items-center gap-[18px] border-b border-rule py-[18px]">
+              <Link href={`/c/${e.id}`} className="flex min-w-0 flex-1 items-center gap-[18px]">
+                {e.images[0] && (
+                  <img
+                    src={e.images[0]}
+                    alt=""
+                    className="h-[66px] w-11 flex-none rounded-[3px] border border-bronze object-cover shadow-[0_6px_12px_-8px_rgba(60,40,20,0.4)]"
+                  />
+                )}
+                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                  <span className="text-[12px] text-ink-2">{fmt.format(new Date(e.createdAt))}</span>
+                  <span className="line-clamp-2 font-serif text-[21px] italic leading-6">{e.title ?? t.untitled}</span>
+                  <span className="meta">
+                    <span className="arcana text-[13px] text-ink">{e.names[0]}</span>
+                    {"  ·  "}
+                    <span className="whitespace-nowrap">
+                      Nº <b className="tabnum">{e.numbers[0]}</b>
+                    </span>
+                    {e.names.length > 1 ? `  ·  +${e.names.length - 1}` : ""}
+                  </span>
                 </div>
               </Link>
-              <button onClick={() => toggle(e)} aria-label={t.favorites} aria-pressed={e.favorite} className="p-2">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill={e.favorite ? "var(--color-rose)" : "none"} stroke={e.favorite ? "var(--color-rose)" : "var(--color-ink-3)"} strokeWidth="1.5">
+              <button
+                onClick={() => toggle(e)}
+                aria-label={t.favorites}
+                aria-pressed={e.favorite}
+                className="flex h-11 w-11 flex-none items-center justify-center"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill={e.favorite ? "var(--color-rose)" : "none"} stroke={e.favorite ? "var(--color-rose)" : "var(--color-ink-2)"} strokeWidth="1.5">
                   <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" strokeLinejoin="round" />
                 </svg>
               </button>

@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 /*
- * Design system Morning Cards, identité Galerie (validée par Sarah le 4 novembre,
- * avec le bleu d'origine et sans flèche sur les boutons).
- * La carte est une œuvre : serif net, cartels de musée, filets fins. Ardoise pour
- * l'action, vieux rose en accent rare, bronze réservé au cadre des cartes.
- * Boutons sans arrondi, blocs 4 px maximum. Pas de dégradé, pas d'emoji.
+ * Design system Morning Cards : Galerie revue par Sarah le 9 novembre
+ * (handoff « Home + chat »). Cormorant Garamond et DM Sans ; l'arche de la home
+ * prend la couleur de la carte révélée et la passe à l'en-tête du chat.
+ * Ardoise pour l'action (filet sous les CTA texte), bronze réservé au cadre des
+ * cartes, jamais de blanc pur. Boutons sans arrondi. Pas de dégradé, pas d'emoji.
  */
 @theme {
   --color-canvas: #fefcfa;
   --color-surface: #faf3ef;
   --color-ink: #2c2825;
-  --color-ink-2: #6b635d;
+  --color-ink-2: #5f5852;
   --color-ink-3: #7a726b;
   --color-rule: #e5ddd4;
   --color-slate: #558bbb;
@@ -19,9 +19,11 @@
   --color-slate-soft: #b5cadd;
   --color-rose: #c16780;
   --color-bronze: #957e45;
+  --color-rule-msg: #c9c0b6;
+  --color-arch-idle: #f9f3f3;
 
-  --font-serif: var(--font-instrument-serif), "Instrument Serif", Georgia, serif;
-  --font-sans: var(--font-instrument-sans), "Instrument Sans", system-ui, sans-serif;
+  --font-serif: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  --font-sans: var(--font-dm-sans), "DM Sans", system-ui, sans-serif;
 
   --ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
@@ -44,34 +46,82 @@ body {
   background: var(--color-slate-soft);
 }
 
-/* Titre display, une fois par écran : romain, l'italique reste au mot qui compte. */
+/* Titres : Cormorant italique, minuscules. */
 .display {
   font-family: var(--font-serif);
-  font-weight: 400;
-  line-height: 1;
-  letter-spacing: -0.02em;
-}
-
-.title {
-  font-family: var(--font-serif);
+  font-style: italic;
   font-weight: 400;
   line-height: 1.1;
 }
 
-/* Cartel : les petites capitales ne servent qu'aux légendes, comme dans un musée. */
+.title {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+/* Titre de page : une fois par écran, aligné à gauche, 40 / 44 px. */
+.page-title {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 40px;
+  line-height: 44px;
+}
+
+/* Nom d'arcane : Cormorant 500 en capitales. */
+.arcana {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 1.15;
+}
+
+/* CTA texte : Cormorant italique 20 px, filet ardoise dessous (« Révéler le message. »). */
+.cta-text {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 20px;
+}
+.cta-text > span {
+  border-bottom: 1.5px solid var(--color-slate);
+  padding-bottom: 1px;
+}
+
+/* Ligne deck / Nº : DM Sans 10 px en capitales ; le chiffre en 500, encre. */
+.meta {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-ink-2);
+}
+.meta b {
+  font-weight: 500;
+  color: var(--color-ink);
+}
+.tabnum {
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* Légendes et onglets : petites capitales DM Sans. */
 .label {
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 /* Filets : une seule épaisseur et une seule teinte partout. */
 .hair-b {
-  border-bottom: 0.5px solid var(--color-ink-3);
+  border-bottom: 1px solid var(--color-rule);
 }
 .hair-t {
-  border-top: 0.5px solid var(--color-ink-3);
+  border-top: 1px solid var(--color-rule);
 }
 
 .btn-primary {
@@ -157,6 +207,53 @@ body {
 }
 .fade-up {
   animation: fade-up 0.6s var(--ease-soft) both;
+}
+
+/* Carte en attente : elle flotte. */
+@keyframes mc-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+.mc-float {
+  animation: mc-float 5.5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+/* Apparition d'une carte : l'épreuve qui se développe. */
+@keyframes mc-develop {
+  from {
+    opacity: 0;
+    filter: blur(10px) brightness(1.35) contrast(0.6) sepia(0.4);
+    transform: scale(0.985);
+  }
+  to {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}
+.mc-develop {
+  animation: mc-develop 1.6s var(--ease-soft) 0.15s both;
+}
+@keyframes mc-fade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.mc-in {
+  animation: mc-fade 0.7s var(--ease-soft) 1.3s both;
+}
+.mc-in2 {
+  animation: mc-fade 0.7s var(--ease-soft) 1.8s both;
 }
 
 @keyframes pulse-card {
@@ -246,6 +343,8 @@ body {
   --color-slate-soft: #2f4a66;
   --color-rose: #dd93a8;
   --color-bronze: #b89d5f;
+  --color-rule-msg: #3d4b63;
+  --color-arch-idle: #142036;
 }
 @media (prefers-color-scheme: dark) {
   :root[data-theme="system"] {
@@ -258,6 +357,8 @@ body {
     --color-slate-soft: #2f4a66;
     --color-rose: #dd93a8;
     --color-bronze: #b89d5f;
+    --color-rule-msg: #3d4b63;
+    --color-arch-idle: #142036;
   }
   :root[data-theme="system"] img[src^="/brand/wordmark"],
   :root[data-theme="system"] img[src^="/brand/picto"] {

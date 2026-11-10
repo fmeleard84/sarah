@@ -22,6 +22,8 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
       initialCards={cards}
       initialMessages={messages}
       names={names}
+      myDeck={conv.deck_id === null}
+      createdAt={conv.created_at}
     />
   );
 }

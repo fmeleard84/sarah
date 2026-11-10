@@ -25,7 +25,7 @@ export default async function DeckDetail({ params }: { params: Promise<{ slug: s
         ‹
       </Link>
       <header className="mt-2">
-        <h1 className="display text-[44px]">{deck.name.toLowerCase()}</h1>
+        <h1 className="page-title">{deck.name.toLowerCase()}</h1>
         {deck.artist && <p className="label mt-2 text-ink-3">{t.decks.inspired(deck.artist)}</p>}
         <p className="mt-5 text-[16px] text-ink-2" style={{ lineHeight: 1.55 }}>
           {deckDescription(deck, locale)}

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import sharp from "sharp";
+import { suggestArchColor } from "@/lib/archColor";
 import { assertAdmin } from "@/lib/admin";
 import { createServiceClient } from "@/lib/supabase/admin";
 
@@ -57,8 +58,10 @@ export async function POST(req: Request) {
   // Le chemin suit la convention des cartes d'origine : sans extension, la
   // miniature est « -sm.webp » (voir cardImage dans lib/decks.ts).
   const image_path = `/sb/storage/v1/object/public/decks/${base}`;
-  const { error } = await db.from("cards").upsert({ deck_id: deck.id, arcana, image_path }, { onConflict: "deck_id,arcana" });
+  // Nouvelle image, nouvelle couleur d'arche suggérée (l'intensité réglée reste).
+  const arch_color = await suggestArchColor(large).catch(() => null);
+  const { error } = await db.from("cards").upsert({ deck_id: deck.id, arcana, image_path, arch_color }, { onConflict: "deck_id,arcana" });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  return NextResponse.json({ image_path });
+  return NextResponse.json({ image_path, arch_color });
 }

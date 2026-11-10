@@ -45,6 +45,17 @@ Source : brief dev de Sarah (doc Claude « Morning Cards · Brief dev », maquet
 | Mesure des CTA | Chaque clic « early adopter » est compté par emplacement (événement `cta`), visible dans `/admin/mesure` | `track.ts` |
 
 
+## DA de Sarah du 9 novembre (home, chat, journal), intégrée le 10 novembre
+
+Appliqué tel que spécifié dans son handoff Claude Design. Arbitrages pris là où les specs ne tranchaient pas :
+- **Geste** : un toucher simple sur la carte (le maintien de 1,2 s disparaît), comme dans les maquettes.
+- **Tirages 3 et 5 cartes** : plus de sélecteur sur la home (specs). Les cartes suivantes se tirent dans le chat par « Tirer une carte », sans le choix parmi cinq cartes de dos. Les quotas de cartes par conversation (`plans.ts`) s'appliquent toujours.
+- **Menu** : la pill actuelle reste ; invisible à l'arrivée sur la home, elle apparaît après le tirage ou au bout de 4 secondes, pour ne jamais enfermer la personne.
+- **Couleurs d'arche** : suggérées automatiquement pour les 132 cartes, sauf trois réglées d'après les maquettes (Le Pendu de Chronique #9DB4C6 à 0,36 ; La Tempérance et L'Étoile d'Egon). Chronique, deck sépia, donne des arches beiges : à revoir à la main dans l'admin si Sarah veut plus de couleur.
+- **En-tête du chat, plusieurs cartes** : « Nº 14 · 2 CARTES CE MATIN » devient « cet après-midi » ou « ce soir » selon l'heure du tirage, et seulement le nombre de cartes pour un tirage d'un autre jour.
+- **Mode sombre** : l'arche mélange la couleur de la carte au bleu marine au lieu du faux blanc.
+- **Écran de transition** (« un geste. un insight. » sur fond ardoise) : retiré, « Révéler le message. » ouvre directement le chat.
+
 ## Hors V1 (prévu ensuite)
 - WhatsApp (offre Exploration par numéro de téléphone), notifications : V1.1.
 - Cadeaux, partage sur les réseaux, filtres de la bibliothèque, magazine. Dans le profil : FAQ, CGV, WhatsApp.

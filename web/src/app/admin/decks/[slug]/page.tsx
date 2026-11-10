@@ -12,7 +12,7 @@ export default async function AdminDeck({ params }: { params: Promise<{ slug: st
   const db = createServiceClient();
   const { data: deck } = await db.from("decks").select("*").eq("slug", slug).maybeSingle();
   if (!deck) notFound();
-  const [{ data: cards }, arcana] = await Promise.all([db.from("cards").select("arcana, image_path").eq("deck_id", deck.id), listArcana()]);
+  const [{ data: cards }, arcana] = await Promise.all([db.from("cards").select("arcana, image_path, arch_color, arch_intensity").eq("deck_id", deck.id), listArcana()]);
 
   return (
     <>
@@ -28,7 +28,8 @@ export default async function AdminDeck({ params }: { params: Promise<{ slug: st
         <h2 className="title text-[26px]">les cartes.</h2>
         <p className="mt-1 max-w-[70ch] text-[14px] text-ink-2">
           Clique sur une carte pour la remplacer par une nouvelle image. Elle est recadrée au format des cartes (2:3) et apparaît aussitôt dans
-          l&apos;application, y compris dans les conversations passées.
+          l&apos;application, y compris dans les conversations passées. La pastille sous chaque carte règle la couleur de son arche (home et
+          en-tête du chat) : suggérée à l&apos;envoi de l&apos;image, modifiable ici.
         </p>
         <CardGrid deckId={deck.id} cards={cards ?? []} arcana={arcana.map((a) => ({ number: a.number, numeral: a.numeral, name: a.name_fr }))} />
       </section>
